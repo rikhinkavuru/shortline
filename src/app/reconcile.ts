@@ -199,7 +199,13 @@ export async function settle(ctx: AppContext, dispatchIds: string[], options: { 
           ctx.bus.emit({ type: "call_event", callId: dispatch.callId, eventType: e.type, message: e.message, details: e.details });
         }
       }
-      const result = await reconcileDispatch(ctx, dispatch);
+      let result: ReconcileResult = "pending";
+      try {
+        result = await reconcileDispatch(ctx, dispatch);
+      } catch (error) {
+        // A read failure (rate limit, transient network) must not abandon the wait; the dispatch stays accepted.
+        ctx.bus.emit({ type: "notice", level: "warn", message: `reconcile ${dispatch.id}: ${error instanceof Error ? error.message : String(error)}; retrying` });
+      }
       if (result !== "pending") {
         pending.delete(id);
       }

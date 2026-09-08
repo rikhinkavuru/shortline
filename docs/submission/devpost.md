@@ -70,11 +70,11 @@ SHORTLINE_FAKE_PACE_MS=1500 npm run demo
 
 Open http://127.0.0.1:8787/. Tick "Ignore calling hours (dry-run only)", click **Run sweep now**, then plan and run a **Find it now** request. Click **transcript** on any observation. To verify the live SDK path without placing a call: `SHORTLINE_MODE=live CALLE_API_KEY=... SHORTLINE_LIVE_ACK=I_UNDERSTAND_REAL_CALLS_COST_MONEY_AND_CANNOT_BE_RECALLED npm run dev -- auth-check`.
 
-Hosted dry-run demo (no calls possible): see the Devpost "Try it out" link.
+Hosted dry-run demo (no calls possible): https://shortline-rikhinkavuru-9840s-projects.vercel.app/
 
 ## Links to fill in on the form
 
 - Pull request URL: (from `gh pr create`, see docs/submission/pr-body.md)
 - Demo video: YouTube link, under three minutes, public
 - CALL-E account email: the address used to sign up at heycall-e.com
-- Optional demo URL: the Vercel URL of the hosted dry-run
+- Optional demo URL: https://shortline-rikhinkavuru-9840s-projects.vercel.app/

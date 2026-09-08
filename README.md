@@ -43,6 +43,8 @@ Shortline treats each call as a **measurement** with known noise (voicemail, men
 | Technical implementation | official `@call-e/calle` SDK 0.7 batch calls with `recipient_result_schema`, task-level `result_schema` cross-check, idempotency keys, terminal webhooks with `CALL-E-Event-Id` and authenticated reconciliation, developer events (`src/calle/`, `src/app/`) |
 | Product experience | dashboard with live SSE feed and transcript evidence, CLI, MCP server, portable skill (`src/server/`, `src/cli.ts`, `src/mcp/`, `skill/`) |
 
+**Hosted dry-run demo (no calls possible):** <https://shortline-rikhinkavuru-9840s-projects.vercel.app/>
+
 ## Try it in two minutes (no account, no calls)
 
 Requires Node.js 22.13 or newer (uses the built-in `node:sqlite`).
