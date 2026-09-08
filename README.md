@@ -6,6 +6,8 @@ Shortline asks a rotating, stratified sample of pharmacies one question by phone
 
 Built for the CALL-E "Your Code Is Calling" hackathon. Dry-run by default; no call can be placed without three explicit settings.
 
+![Shortline dashboard: availability index with confidence band, strata table, live sweep feed, sourcing waves, and the courtesy ledger](docs/dashboard.png)
+
 ```
 ┌───────────────────────── every week ─────────────────────────┐
 │  frame (all pharmacies)  →  stratified random subsample       │
