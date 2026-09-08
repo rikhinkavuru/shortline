@@ -6,5 +6,12 @@
       "maxDuration": 120
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ],
+  "buildCommand": "npm run check",
+  "outputDirectory": "public"
 }
