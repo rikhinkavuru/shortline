@@ -34,7 +34,7 @@ CALL-E usage: batch call tasks with `recipients`, a strict `recipient_result_sch
 
 Dispatches follow the community production guide: reserved → accepted → terminal_unverified → terminal_verified, with `submission_unknown` replayed under the same key and `needs_human` for any binding or evidence failure.
 
-Dry-run is the default. A scripted fake provider plays fifteen callee scenarios (including a schema-valid result whose quote is invented and a call where the product was never named), and a fake HTTP server lets the real SDK adapter be tested end to end, webhooks included. 62 tests run without a network or credentials.
+Dry-run is the default. A scripted fake provider plays fifteen callee scenarios (including a schema-valid result whose quote is invented and a call where the product was never named), and a fake HTTP server lets the real SDK adapter be tested end to end, webhooks included. 63 tests run without a network or credentials.
 
 ## Challenges we ran into
 
@@ -64,7 +64,7 @@ TypeScript, Node.js, node:sqlite, Hono, @call-e/calle (CALL-E server SDK), Model
 
 ```bash
 git clone https://github.com/rikhinkavuru/shortline && cd shortline
-npm install && npm test          # 62 tests, no credentials
+npm install && npm test          # 63 tests, no credentials
 SHORTLINE_FAKE_PACE_MS=1500 npm run demo
 ```
 

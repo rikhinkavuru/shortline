@@ -48,7 +48,7 @@ Stopping the process stops further dispatches. Accepted batches complete on CALL
 ```bash
 cd apps/typescript/shortline
 npm install
-npm test        # 62 tests: estimator, sampling, classification, waves, ledger, fake provider, SDK adapter against a fake HTTP server with webhook delivery, sweep/find workflows, crash-safety replay, binding mismatch, live-mode guards, webhook receiver
+npm test        # 63 tests: estimator, sampling, classification, waves, ledger, fake provider, SDK adapter against a fake HTTP server with webhook delivery, sweep/find workflows, crash-safety replay, binding mismatch, live-mode guards, webhook receiver
 npm run demo    # dashboard with eight simulated weeks
 ```
 
