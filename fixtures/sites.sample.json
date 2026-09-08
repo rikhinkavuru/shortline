@@ -1,0 +1,368 @@
+[
+  {
+    "id": "sf-chn-1",
+    "name": "Presidio Drug #101",
+    "kind": "chain",
+    "phone": "+14155550101",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7524,
+    "lng": -122.4549
+  },
+  {
+    "id": "sf-chn-2",
+    "name": "Bayline Pharmacy #102",
+    "kind": "chain",
+    "phone": "+14155550102",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7851,
+    "lng": -122.4628
+  },
+  {
+    "id": "sf-chn-3",
+    "name": "Cardinal Rx #103",
+    "kind": "chain",
+    "phone": "+14155550103",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7736,
+    "lng": -122.4334,
+    "scenario": "unattributed_quote"
+  },
+  {
+    "id": "sf-chn-4",
+    "name": "Redwood Health Mart #104",
+    "kind": "chain",
+    "phone": "+14155550104",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7258,
+    "lng": -122.4193
+  },
+  {
+    "id": "sf-chn-5",
+    "name": "Pacific Care Pharmacy #105",
+    "kind": "chain",
+    "phone": "+14155550105",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7237,
+    "lng": -122.4266
+  },
+  {
+    "id": "sf-chn-6",
+    "name": "Summit Drugstore #106",
+    "kind": "chain",
+    "phone": "+14155550106",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.727,
+    "lng": -122.4609
+  },
+  {
+    "id": "sf-ind-1",
+    "name": "Mission Family Pharmacy",
+    "kind": "independent",
+    "phone": "+14155550107",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7625,
+    "lng": -122.3873
+  },
+  {
+    "id": "sf-ind-2",
+    "name": "Golden Gate Apothecary",
+    "kind": "independent",
+    "phone": "+14155550108",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7324,
+    "lng": -122.4477
+  },
+  {
+    "id": "sf-ind-3",
+    "name": "Sunset Neighborhood Rx",
+    "kind": "independent",
+    "phone": "+14155550109",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7827,
+    "lng": -122.3752
+  },
+  {
+    "id": "sf-ind-4",
+    "name": "Noe Valley Pharmacy",
+    "kind": "independent",
+    "phone": "+14155550110",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7777,
+    "lng": -122.4303,
+    "scenario": "do_not_call"
+  },
+  {
+    "id": "sf-ind-5",
+    "name": "Bayview Community Drug",
+    "kind": "independent",
+    "phone": "+14155550111",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8176,
+    "lng": -122.4653
+  },
+  {
+    "id": "sf-ind-6",
+    "name": "Richmond District Pharmacy",
+    "kind": "independent",
+    "phone": "+14155550112",
+    "region": "US-CA-SF",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8058,
+    "lng": -122.441
+  },
+  {
+    "id": "eb-chn-1",
+    "name": "Presidio Drug #101",
+    "kind": "chain",
+    "phone": "+15105550113",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7431,
+    "lng": -122.3312
+  },
+  {
+    "id": "eb-chn-2",
+    "name": "Bayline Pharmacy #102",
+    "kind": "chain",
+    "phone": "+15105550114",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7694,
+    "lng": -122.2194,
+    "scenario": "ivr_dead_end"
+  },
+  {
+    "id": "eb-chn-3",
+    "name": "Cardinal Rx #103",
+    "kind": "chain",
+    "phone": "+15105550115",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7489,
+    "lng": -122.2569
+  },
+  {
+    "id": "eb-chn-4",
+    "name": "Redwood Health Mart #104",
+    "kind": "chain",
+    "phone": "+15105550116",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8222,
+    "lng": -122.2904
+  },
+  {
+    "id": "eb-chn-5",
+    "name": "Pacific Care Pharmacy #105",
+    "kind": "chain",
+    "phone": "+15105550117",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8076,
+    "lng": -122.34
+  },
+  {
+    "id": "eb-chn-6",
+    "name": "Summit Drugstore #106",
+    "kind": "chain",
+    "phone": "+15105550118",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7295,
+    "lng": -122.317
+  },
+  {
+    "id": "eb-ind-1",
+    "name": "Lakeshore Pharmacy",
+    "kind": "independent",
+    "phone": "+15105550119",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8289,
+    "lng": -122.2816
+  },
+  {
+    "id": "eb-ind-2",
+    "name": "Temescal Family Rx",
+    "kind": "independent",
+    "phone": "+15105550120",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7703,
+    "lng": -122.2563
+  },
+  {
+    "id": "eb-ind-3",
+    "name": "Fruitvale Botica",
+    "kind": "independent",
+    "phone": "+15105550121",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7925,
+    "lng": -122.302
+  },
+  {
+    "id": "eb-ind-4",
+    "name": "Rockridge Apothecary",
+    "kind": "independent",
+    "phone": "+15105550122",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.8471,
+    "lng": -122.2382
+  },
+  {
+    "id": "eb-ind-5",
+    "name": "Alameda Island Pharmacy",
+    "kind": "independent",
+    "phone": "+15105550123",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.7591,
+    "lng": -122.2581
+  },
+  {
+    "id": "eb-ind-6",
+    "name": "Berkeley Hills Drug",
+    "kind": "independent",
+    "phone": "+15105550124",
+    "region": "US-CA-EB",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.804,
+    "lng": -122.21,
+    "scenario": "never_asked"
+  },
+  {
+    "id": "sj-chn-1",
+    "name": "Presidio Drug #101",
+    "kind": "chain",
+    "phone": "+14085550125",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3813,
+    "lng": -121.9282
+  },
+  {
+    "id": "sj-chn-2",
+    "name": "Bayline Pharmacy #102",
+    "kind": "chain",
+    "phone": "+14085550126",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.4264,
+    "lng": -121.9587
+  },
+  {
+    "id": "sj-chn-3",
+    "name": "Cardinal Rx #103",
+    "kind": "chain",
+    "phone": "+14085550127",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3253,
+    "lng": -121.8437
+  },
+  {
+    "id": "sj-chn-4",
+    "name": "Redwood Health Mart #104",
+    "kind": "chain",
+    "phone": "+14085550128",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.2774,
+    "lng": -121.892,
+    "scenario": "refused"
+  },
+  {
+    "id": "sj-chn-5",
+    "name": "Pacific Care Pharmacy #105",
+    "kind": "chain",
+    "phone": "+14085550129",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.2571,
+    "lng": -121.8597
+  },
+  {
+    "id": "sj-chn-6",
+    "name": "Summit Drugstore #106",
+    "kind": "chain",
+    "phone": "+14085550130",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3876,
+    "lng": -121.8769
+  },
+  {
+    "id": "sj-ind-1",
+    "name": "Willow Glen Pharmacy",
+    "kind": "independent",
+    "phone": "+14085550131",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.4076,
+    "lng": -121.9235
+  },
+  {
+    "id": "sj-ind-2",
+    "name": "Alum Rock Family Rx",
+    "kind": "independent",
+    "phone": "+14085550132",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3752,
+    "lng": -121.873
+  },
+  {
+    "id": "sj-ind-3",
+    "name": "Japantown Drug",
+    "kind": "independent",
+    "phone": "+14085550133",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3544,
+    "lng": -121.8979
+  },
+  {
+    "id": "sj-ind-4",
+    "name": "Santa Clara Apothecary",
+    "kind": "independent",
+    "phone": "+14085550134",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.4012,
+    "lng": -121.81
+  },
+  {
+    "id": "sj-ind-5",
+    "name": "Sunnyvale Neighborhood Pharmacy",
+    "kind": "independent",
+    "phone": "+14085550135",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.3353,
+    "lng": -121.8605,
+    "scenario": "wrong_number"
+  },
+  {
+    "id": "sj-ind-6",
+    "name": "Almaden Valley Rx",
+    "kind": "independent",
+    "phone": "+14085550136",
+    "region": "US-CA-SJ",
+    "timezone": "America/Los_Angeles",
+    "lat": 37.2609,
+    "lng": -121.8537
+  }
+]

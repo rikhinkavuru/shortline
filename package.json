@@ -1,0 +1,37 @@
+{
+  "name": "shortline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phone calls as a statistical sensor network for drug shortages: rotating stratified pharmacy panels, CALL-E batch calls, weekly availability index with confidence intervals, and evidence-backed sourcing waves.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "bin": {
+    "shortline": "./bin/shortline.mjs"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && mkdir -p dist/server/ui && cp src/server/ui/* dist/server/ui/",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run",
+    "test:watch": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest",
+    "dev": "node --disable-warning=ExperimentalWarning --import tsx src/cli.ts",
+    "serve": "node --disable-warning=ExperimentalWarning --import tsx src/cli.ts serve",
+    "demo": "node --disable-warning=ExperimentalWarning --import tsx src/cli.ts demo",
+    "mcp": "node --disable-warning=ExperimentalWarning --import tsx src/cli.ts mcp"
+  },
+  "dependencies": {
+    "@call-e/calle": "0.7.0",
+    "@hono/node-server": "^1.14.0",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "hono": "^4.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

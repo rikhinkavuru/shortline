@@ -1,0 +1,70 @@
+[
+  {
+    "id": "amoxicillin-susp",
+    "product": {
+      "name": "amoxicillin",
+      "strength": "400 mg/5 mL",
+      "form": "oral suspension"
+    },
+    "regions": [
+      "US-CA-SF",
+      "US-CA-EB",
+      "US-CA-SJ"
+    ],
+    "panelPerStratum": 3,
+    "cooldownDays": 14,
+    "globalMinGapDays": 5,
+    "window": {
+      "start": "10:00",
+      "end": "17:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "thresholds": {
+      "shortageUpper": 0.5,
+      "strainedPoint": 0.7
+    },
+    "minUsable": 6,
+    "status": "active"
+  },
+  {
+    "id": "methylphenidate-er",
+    "product": {
+      "name": "methylphenidate ER",
+      "strength": "36 mg",
+      "form": "tablets"
+    },
+    "regions": [
+      "US-CA-SF",
+      "US-CA-EB",
+      "US-CA-SJ"
+    ],
+    "panelPerStratum": 3,
+    "cooldownDays": 14,
+    "globalMinGapDays": 5,
+    "window": {
+      "start": "10:00",
+      "end": "17:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "thresholds": {
+      "shortageUpper": 0.5,
+      "strainedPoint": 0.7
+    },
+    "minUsable": 6,
+    "status": "paused"
+  }
+]
