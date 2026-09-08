@@ -79,7 +79,9 @@ function candidatesFor(ctx: AppContext, request: FindRequest, options: { ignoreW
       skipped.push({ site: c.site, reason: "observed_out_of_stock_recently" });
     }
   }
-  return { ranked, skipped };
+  const seen = new Set<string>();
+  const dedupedSkipped = skipped.filter((s) => (seen.has(s.site.id) ? false : (seen.add(s.site.id), true)));
+  return { ranked, skipped: dedupedSkipped };
 }
 
 export function planFind(ctx: AppContext, input: PlanFindInput): FindPreview {
