@@ -111,6 +111,7 @@ td.num, th.num { font-family: var(--mono); text-align: right; }
 .find-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 8px 0 12px; align-items: end; }
 .find-form label { display: flex; flex-direction: column; gap: 4px; color: var(--paper-3); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
 .find-form input, .find-form select { background: var(--ink-3); color: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; font-family: var(--mono); }
+.find-form label small { text-transform: none; letter-spacing: 0; color: var(--paper-3); }
 .find-form label.check { flex-direction: row; align-items: center; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--paper-2); grid-column: span 2; }
 .find-form button { grid-column: span 2; justify-self: start; }
 .find-preview { background: var(--ink-3); border-radius: 8px; padding: 12px; margin-bottom: 12px; }

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS sites (
   opt_out INTEGER NOT NULL DEFAULT 0,
   opt_out_reason TEXT,
   scenario TEXT,
+  test_line INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS watches (

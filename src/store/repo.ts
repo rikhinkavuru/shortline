@@ -33,6 +33,9 @@ function rowToSite(row: Row): Site {
   if (row.scenario) {
     site.scenario = String(row.scenario);
   }
+  if (Number(row.test_line) === 1) {
+    site.testLine = true;
+  }
   return site;
 }
 
@@ -103,11 +106,11 @@ export class Repo {
   upsertSite(site: Site): void {
     this.db
       .prepare(
-        `INSERT INTO sites (id, name, kind, phone, region, timezone, lat, lng, source_kind, source_ref, opt_out, opt_out_reason, scenario, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO sites (id, name, kind, phone, region, timezone, lat, lng, source_kind, source_ref, opt_out, opt_out_reason, scenario, test_line, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET name = excluded.name, kind = excluded.kind, phone = excluded.phone, region = excluded.region,
            timezone = excluded.timezone, lat = excluded.lat, lng = excluded.lng, source_kind = excluded.source_kind,
-           source_ref = excluded.source_ref, scenario = excluded.scenario`
+           source_ref = excluded.source_ref, scenario = excluded.scenario, test_line = excluded.test_line`
       )
       .run(
         site.id,
@@ -123,6 +126,7 @@ export class Repo {
         site.optOut ? 1 : 0,
         site.optOutReason ?? null,
         site.scenario ?? null,
+        site.testLine ? 1 : 0,
         site.createdAt
       );
   }

@@ -5,8 +5,9 @@ Judges are not required to watch past three minutes, so the cut is 2:40 with the
 ## Setup before recording
 
 1. `npm run demo` once so the database has eight simulated weeks; stop it.
-2. Add your own phone as a site so the live call rings on your desk:
-   `shortline site add --id demo-me --name "Corner Pharmacy" --kind independent --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles`
+2. Add your own phone as a **test line** so the live call rings on your desk at any hour and never enters the index:
+   `shortline site add --id demo-me --name "Corner Pharmacy" --kind independent --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles --test-line`
+   Full commands, including a one-call smoke test: `docs/live-runbook.md`.
 3. Optionally add one real chain store pharmacy line with a public phone menu (a normal customer question, disclosed as automated). Keep it to one.
 4. Export the three live variables and `SHORTLINE_AUTH_TOKEN`, start `shortline serve`, open the dashboard with `?token=`.
 5. Record the screen (dashboard on the left, phone on the right or phone audio through the mic).

@@ -31,6 +31,12 @@ export interface Site {
   source: SiteSource;
   optOut: boolean;
   optOutReason?: string;
+  /**
+   * Operator-owned test line (your own phone). Exempt from calling windows
+   * and cooldowns, allowed in sourcing requests, never part of a sweep frame
+   * or an estimate.
+   */
+  testLine?: boolean;
   /** Fixture-only: which fake scenario this site plays in dry-run mode. */
   scenario?: string;
   createdAt: string;
@@ -210,6 +216,8 @@ export interface FindRequest {
   waveSize: number;
   maxWaves: number;
   askHold: boolean;
+  /** Restrict candidates to these site ids (smoke tests, single-site checks). */
+  onlySiteIds?: string[];
   status: FindStatus;
   plannedSiteIds: string[];
   usedSiteIds: string[];

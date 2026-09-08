@@ -20,6 +20,8 @@ export interface PlanFindInput {
   askHold?: boolean;
   ignoreWindow?: boolean;
   window?: CallWindow;
+  /** Restrict candidates to these site ids, e.g. an operator's own test line for a live smoke test. */
+  onlySiteIds?: string[];
 }
 
 export interface FindPreview {
@@ -38,8 +40,12 @@ function candidatesFor(ctx: AppContext, request: FindRequest, options: { ignoreW
   const now = ctx.now();
   const skipped: Array<{ site: Site; reason: string }> = [];
   const list: FindCandidate[] = [];
+  const only = request.onlySiteIds && request.onlySiteIds.length > 0 ? new Set(request.onlySiteIds) : null;
   for (const site of ctx.repo.listSites()) {
-    if (site.region !== request.region) {
+    if (site.region !== request.region && !only?.has(site.id)) {
+      continue;
+    }
+    if (only && !only.has(site.id)) {
       continue;
     }
     let ineligible: string | null = null;
@@ -50,12 +56,12 @@ function candidatesFor(ctx: AppContext, request: FindRequest, options: { ignoreW
       ineligible = "does_not_carry";
     } else if (history?.wrongNumber) {
       ineligible = "wrong_number";
-    } else if (!options.ignoreWindow && !withinWindow(site.timezone, options.window, now)) {
+    } else if (!site.testLine && !options.ignoreWindow && !withinWindow(site.timezone, options.window, now)) {
       ineligible = "outside_calling_window";
     }
     const latest = ctx.repo.listObservations({ siteId: site.id, limit: 1 })[0] ?? null;
     let recent: FindCandidate["recent"] = null;
-    if (latest) {
+    if (latest && !site.testLine) {
       const ageHours = (now.getTime() - new Date(latest.observedAt).getTime()) / 3600000;
       if (latest.usable) {
         recent = { outcome: latest.outcome, observedAt: latest.observedAt, ageHours };
@@ -103,6 +109,7 @@ export function planFind(ctx: AppContext, input: PlanFindInput): FindPreview {
     waveSize: Math.max(1, Math.min(input.waveSize ?? 3, ctx.config.batchSize)),
     maxWaves: Math.max(1, input.maxWaves ?? 4),
     askHold: Boolean(input.askHold),
+    ...(input.onlySiteIds && input.onlySiteIds.length > 0 ? { onlySiteIds: input.onlySiteIds } : {}),
     status: "planned",
     plannedSiteIds: [],
     usedSiteIds: [],

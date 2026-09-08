@@ -25,6 +25,7 @@ export interface EligibilityInput {
 }
 
 export type Ineligibility =
+  | "test_line"
   | "opted_out"
   | "region_not_watched"
   | "does_not_carry"
@@ -36,6 +37,9 @@ export type Ineligibility =
 /** Why a site may not be sampled right now. `null` means eligible. */
 export function ineligibility(input: EligibilityInput): Ineligibility | null {
   const { site, watch, history, now } = input;
+  if (site.testLine) {
+    return "test_line";
+  }
   if (site.optOut) {
     return "opted_out";
   }
@@ -91,7 +95,7 @@ export function planSweep(watch: Watch, frame: FrameEntry[], isoWeek: string, no
   const excluded: Array<{ siteId: string; reason: Ineligibility }> = [];
   for (const entry of frame) {
     const key = stratumKey(entry.site.region, entry.site.kind);
-    if (watch.regions.includes(entry.site.region) && !entry.site.optOut && entry.history.carries && !entry.history.wrongNumber) {
+    if (watch.regions.includes(entry.site.region) && !entry.site.optOut && !entry.site.testLine && entry.history.carries && !entry.history.wrongNumber) {
       frameSizes.set(key, (frameSizes.get(key) ?? 0) + 1);
     }
     const reason = ineligibility({ site: entry.site, watch, history: entry.history, now });
@@ -125,7 +129,7 @@ export function dueNow(sites: Site[], window: Watch["window"], now: Date): { due
   const due: Site[] = [];
   const waiting: Site[] = [];
   for (const site of sites) {
-    if (withinWindow(site.timezone, window, now)) {
+    if (site.testLine || withinWindow(site.timezone, window, now)) {
       due.push(site);
     } else {
       waiting.push(site);

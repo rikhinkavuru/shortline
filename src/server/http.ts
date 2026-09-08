@@ -99,7 +99,8 @@ export function createApp(ctx: AppContext): Hono {
         ...(typeof body.maxWaves === "number" ? { maxWaves: body.maxWaves } : {}),
         askHold: Boolean(body.askHold),
         ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live",
-        ...(body.near && typeof body.near === "object" ? { near: body.near as { lat: number; lng: number } } : {})
+        ...(body.near && typeof body.near === "object" ? { near: body.near as { lat: number; lng: number } } : {}),
+        ...(Array.isArray(body.onlySiteIds) && body.onlySiteIds.length > 0 ? { onlySiteIds: (body.onlySiteIds as unknown[]).filter((v): v is string => typeof v === "string").slice(0, 20) } : {})
       });
       return c.json(maskDeep(preview));
     } catch (error) {

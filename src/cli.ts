@@ -77,10 +77,11 @@ const HELP = `shortline — phone calls as a statistical sensor network for drug
   shortline serve                                  dashboard + webhook receiver + recovery poller
   shortline sweep --watch ID [--week 2026-W37] [--wait] [--force]
   shortline estimate --watch ID [--week 2026-W37]
-  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window] [--yes]
+  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window] [--only-site ID[,ID]] [--yes]
   shortline reconcile                              replay ambiguous submissions, drain the webhook inbox
   shortline sites [--region CODE]
-  shortline site add --id ID --name NAME --kind independent --phone +1... --region CODE --tz America/Los_Angeles [--lat --lng]
+  shortline site add --id ID --name NAME --kind independent --phone +1... --region CODE --tz America/Los_Angeles [--lat --lng] [--test-line]
+      --test-line marks your own phone: exempt from calling windows and cooldowns, never sampled, never counted in the index
   shortline watch add --id ID --name NAME [--strength S] [--form F] --regions US-CA-SF,US-CA-EB [--panel 3] [--cooldown 14]
   shortline opt-out --site ID [--undo] [--reason TEXT]
   shortline mcp                                    MCP server over stdio
@@ -195,7 +196,8 @@ async function main(): Promise<void> {
         waveSize: num(flags, "wave", 3),
         maxWaves: num(flags, "max-waves", 4),
         askHold: Boolean(flags["ask-hold"]),
-        ignoreWindow: Boolean(flags["ignore-window"])
+        ignoreWindow: Boolean(flags["ignore-window"]),
+        ...(typeof flags["only-site"] === "string" ? { onlySiteIds: flags["only-site"].split(",").map((s) => s.trim()).filter(Boolean) } : {})
       });
       process.stderr.write(`${modeLine}\n`);
       out(
@@ -261,6 +263,9 @@ async function main(): Promise<void> {
       }
       if (typeof flags.scenario === "string") {
         site.scenario = flags.scenario;
+      }
+      if (flags["test-line"]) {
+        site.testLine = true;
       }
       ctx.repo.upsertSite(site);
       out({ ok: true, site: { ...site, phone: maskPhone(site.phone) } }, json);

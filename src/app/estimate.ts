@@ -23,7 +23,7 @@ export function recomputeEstimate(ctx: AppContext, watchId: string, isoWeek: str
   }
   const start = isoWeekStart(isoWeek);
   const end = new Date(start.getTime() + 7 * 86400000);
-  const sites = ctx.repo.listSites().filter((s) => watch.regions.includes(s.region));
+  const sites = ctx.repo.listSites().filter((s) => watch.regions.includes(s.region) && !s.testLine);
   const counts = new Map<string, StratumCounts>();
   const ensure = (region: string, kind: SiteKind): StratumCounts => {
     const key = stratumKey(region, kind);

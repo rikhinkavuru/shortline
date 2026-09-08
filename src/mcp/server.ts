@@ -78,7 +78,8 @@ export function buildMcpServer(ctx: AppContext): McpServer {
         wave_size: z.number().int().min(1).max(6).optional(),
         max_waves: z.number().int().min(1).max(8).optional(),
         ask_hold: z.boolean().optional().describe("Also ask staff to hold one fill for pickup today. A yes is a stated intention, not a reservation."),
-        near: z.object({ lat: z.number(), lng: z.number() }).optional()
+        near: z.object({ lat: z.number(), lng: z.number() }).optional(),
+        only_site_ids: z.array(z.string()).optional().describe("Restrict candidates to these site ids, e.g. the operator's own test line.")
       },
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
@@ -99,7 +100,8 @@ export function buildMcpServer(ctx: AppContext): McpServer {
         ...(input.wave_size !== undefined ? { waveSize: input.wave_size } : {}),
         ...(input.max_waves !== undefined ? { maxWaves: input.max_waves } : {}),
         askHold: Boolean(input.ask_hold),
-        ...(input.near ? { near: input.near } : {})
+        ...(input.near ? { near: input.near } : {}),
+        ...(input.only_site_ids && input.only_site_ids.length > 0 ? { onlySiteIds: input.only_site_ids } : {})
       });
       return text({
         find_request_id: preview.request.id,

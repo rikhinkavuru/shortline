@@ -181,3 +181,38 @@ describe("webhook receiver", () => {
     expect(handleWebhook(ctx, JSON.stringify({ id: "evt_1", type: "call.completed", data: { id: "call_2" } }), "evt_1").body).toMatchObject({ quarantined: true });
   });
 });
+
+describe("operator test lines", () => {
+  it("are never sampled or estimated, but can be targeted by a sourcing request at any hour", async () => {
+    const ctx = makeCtx();
+    setClock(ctx, () => new Date("2026-09-09T03:00:00Z")); // 20:00 in Los Angeles, outside the window
+    ctx.repo.upsertSite({
+      id: "demo-me",
+      name: "Corner Pharmacy (test line)",
+      kind: "independent",
+      phone: "+14155550190",
+      region: "US-CA-SF",
+      timezone: "America/Los_Angeles",
+      source: { kind: "manual", ref: "test" },
+      optOut: false,
+      testLine: true,
+      scenario: "limited_human",
+      createdAt: "2026-09-01T00:00:00Z"
+    });
+    const watch = ctx.repo.getWatch("amoxicillin-susp")!;
+    const sweep = await runSweep(ctx, watch, { wait: true, force: true });
+    expect(sweep.sweep.plannedSiteIds).not.toContain("demo-me");
+    expect(sweep.excluded.find((e) => e.siteId === "demo-me")?.reason).toBe("test_line");
+    const preview = planFind(ctx, { watchId: watch.id, region: "US-CA-SF", need: 1, waveSize: 1, maxWaves: 1, onlySiteIds: ["demo-me"] });
+    expect(preview.candidates.map((c) => c.siteId)).toEqual(["demo-me"]);
+    expect(preview.estimatedCalls).toBe(1);
+    const result = await runFind(ctx, preview.request.id, { confirm: true });
+    expect(result.status).toBe("met");
+    expect(result.confirmedSiteIds).toEqual(["demo-me"]);
+    const estimate = ctx.repo.listEstimates(watch.id).at(-1)!;
+    expect(estimate.strata.every((s) => s.frameSize <= 6)).toBe(true);
+    const obs = ctx.repo.listObservations({ siteId: "demo-me" });
+    expect(obs).toHaveLength(1);
+    expect(obs[0]?.outcome).toBe("limited");
+  });
+});

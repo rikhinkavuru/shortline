@@ -51,7 +51,7 @@ Requires Node.js 22.13 or newer (uses the built-in `node:sqlite`).
 
 ```bash
 npm install
-npm test           # 62 tests, no network, no credentials
+npm test           # 63 tests, no network, no credentials
 npm run demo       # loads 36 fictional pharmacies, simulates 8 weeks, opens the dashboard
 ```
 
@@ -118,10 +118,13 @@ export CALLE_API_KEY=iams_live_...          # dashboard.heycall-e.com/account/ap
 export SHORTLINE_LIVE_ACK=I_UNDERSTAND_REAL_CALLS_COST_MONEY_AND_CANNOT_BE_RECALLED
 ```
 
-Then:
+Then (step by step with expected output: `docs/live-runbook.md`):
 
 ```bash
 shortline auth-check                                   # read-only: GET /v1/goals?limit=1
+shortline site add --id demo-me --name "Corner Pharmacy" --kind independent \
+  --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles --test-line   # your own phone: never sampled, never in the index
+shortline find --watch amoxicillin-susp --region US-CA-SF --only-site demo-me --need 1 --wave 1 --yes   # one real call, to you
 shortline site add --id my-pharmacy --name "Corner Pharmacy" --kind independent \
   --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles
 shortline watch add --id albuterol --name albuterol --strength "90 mcg" --form "inhaler" --regions US-CA-SF
@@ -145,6 +148,7 @@ Tools: `shortline_watch_status`, `shortline_list_sites`, `shortline_plan_find` (
 ## Side effects, cancellation, data
 
 - **Calls.** Only in live mode, only from `sweep`, `find --yes`, `find-run`, the dashboard's confirm buttons, or `shortline_run_find` with `confirm: true`. Every call discloses that it is automated. Each call task costs CALL-E credit per recipient.
+- **Test lines.** A site added with `--test-line` is the operator's own phone: exempt from calling windows and cooldowns so a smoke test works at any hour, allowed in sourcing requests, never sampled by a sweep and never counted in the index.
 - **No cancellation of an in-flight call.** The Calls API cannot recall a call. Sweeps dispatch in batches of at most `SHORTLINE_BATCH_SIZE` (default 6) and sourcing dispatches one wave at a time so the exposure of any single decision is bounded. Stopping the process stops further dispatches; a batch already accepted completes and is reconciled on the next run.
 - **No recurring jobs are created.** Recurrence is the host scheduler's job.
 - **Opt-out is permanent.** A `do_not_call_request` on any call opts the site out for every watch; operators can also opt a site out from the dashboard or `shortline opt-out`.
@@ -173,7 +177,7 @@ src/mcp/        MCP server
 src/cli.ts      CLI
 skill/          portable Agent Skill (shortline-find)
 fixtures/       36 fictional pharmacies (555-01XX), two watches
-test/           62 tests, no network
+test/           63 tests, no network
 docs/           statistics, safety, call design, demo script
 ```
 

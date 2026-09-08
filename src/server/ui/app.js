@@ -254,7 +254,15 @@ $("#find-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const preview = await api("/api/find/plan", {
     method: "POST",
-    body: JSON.stringify({ watchId: state.watchId, region: $("#find-region").value, need: Number($("#find-need").value), waveSize: Number($("#find-wave").value), askHold: $("#find-hold").checked, ignoreWindow: $("#find-ignore").checked })
+    body: JSON.stringify({
+      watchId: state.watchId,
+      region: $("#find-region").value,
+      need: Number($("#find-need").value),
+      waveSize: Number($("#find-wave").value),
+      askHold: $("#find-hold").checked,
+      ignoreWindow: $("#find-ignore").checked,
+      onlySiteIds: $("#find-only").value.split(",").map((s) => s.trim()).filter(Boolean)
+    })
   });
   state.preview = preview;
   renderPreview(preview);
