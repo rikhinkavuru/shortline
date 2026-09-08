@@ -34,7 +34,14 @@ function ensureSeeded(): Promise<void> {
 const app = createApp(ctx);
 const handler = handle(app);
 
-export default async function (req: Request): Promise<Response> {
+async function serve(request: Request): Promise<Response> {
   await ensureSeeded();
-  return handler(req);
+  return handler(request);
 }
+
+export const GET = serve;
+export const POST = serve;
+export const PUT = serve;
+export const PATCH = serve;
+export const DELETE = serve;
+export const OPTIONS = serve;
