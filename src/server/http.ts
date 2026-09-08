@@ -15,6 +15,11 @@ import { snapshotState } from "./state.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+/** In instant dry-run mode the fake completes synchronously; await so serverless hosts never drop the work. */
+function instant(ctx: AppContext): boolean {
+  return ctx.provider.mode === "fake" && ctx.config.fakePaceMs === 0;
+}
+
 function asset(name: string): string {
   return readFileSync(join(here, "ui", name), "utf8");
 }
@@ -76,7 +81,10 @@ export function createApp(ctx: AppContext): Hono {
       return c.json({ error: "watch_not_found" }, 404);
     }
     const force = Boolean(body.force) && ctx.config.mode !== "live";
-    void runSweep(ctx, watch, { wait: true, force }).catch((error: Error) => ctx.bus.emit({ type: "notice", level: "warn", message: `sweep failed: ${error.message}` }));
+    const run = runSweep(ctx, watch, { wait: true, force }).catch((error: Error) => ctx.bus.emit({ type: "notice", level: "warn", message: `sweep failed: ${error.message}` }));
+    if (instant(ctx)) {
+      await run;
+    }
     return c.json({ started: true });
   });
 
@@ -108,9 +116,12 @@ export function createApp(ctx: AppContext): Hono {
     if (!ctx.repo.getFind(id)) {
       return c.json({ error: "find_not_found" }, 404);
     }
-    void runFind(ctx, id, { confirm: true, ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live" }).catch((error: Error) =>
+    const run = runFind(ctx, id, { confirm: true, ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live" }).catch((error: Error) =>
       ctx.bus.emit({ type: "notice", level: "warn", message: `find ${id} failed: ${error.message}` })
     );
+    if (instant(ctx)) {
+      await run;
+    }
     return c.json({ started: true });
   });
 
