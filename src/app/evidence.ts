@@ -1,6 +1,6 @@
 import { toApiCallTask } from "../calle/api-shape.js";
 import type { ProviderCall, ProviderEvent } from "../calle/provider.js";
-import { maskDeep } from "../domain/phone.js";
+import { isFictionReserved, maskDeep } from "../domain/phone.js";
 import type { Observation } from "../domain/types.js";
 import type { AppContext } from "./context.js";
 
@@ -47,7 +47,8 @@ export async function exportEvidence(ctx: AppContext, dispatchId: string): Promi
       attempts: r.attempts.map((a) => ({ ...a, phone: substitute(a.phone) }))
     }))
   });
-  const masked = maskDeep(shaped) as EvidenceBundle["call"];
+  // Real numbers were replaced above with fiction-block numbers; keep those valid E.164 so the file can replay in a test.
+  const masked = maskDeep(shaped, { keep: isFictionReserved }) as EvidenceBundle["call"];
   const readme = [
     `# Call evidence: ${dispatch.callId}`,
     "",
@@ -65,8 +66,8 @@ export async function exportEvidence(ctx: AppContext, dispatchId: string): Promi
     exportedAt: new Date().toISOString(),
     mode: ctx.provider.mode,
     call: masked,
-    events: maskDeep(events),
-    observations: maskDeep(observations),
+    events: maskDeep(events, { keep: isFictionReserved }),
+    observations: maskDeep(observations, { keep: isFictionReserved }),
     readme
   };
 }

@@ -39,18 +39,24 @@ export function maskPhone(phone: string): string {
   return `+${cc} ••• ${last}`;
 }
 
-/** Recursively mask any string that looks like an E.164 number inside an object. */
-export function maskDeep<T>(value: T): T {
+/**
+ * Recursively mask any string that looks like an E.164 number inside an
+ * object. `keep` lets a caller leave specific numbers intact, which the
+ * evidence export uses for the fiction-block substitutes that must stay
+ * valid E.164 so the file can drive a test.
+ */
+export function maskDeep<T>(value: T, options: { keep?: (phone: string) => boolean } = {}): T {
+  const keep = options.keep;
   if (typeof value === "string") {
-    return value.replace(/\+[1-9]\d{6,14}/g, (m) => maskPhone(m)) as unknown as T;
+    return value.replace(/\+[1-9]\d{6,14}/g, (m) => (keep && keep(m) ? m : maskPhone(m))) as unknown as T;
   }
   if (Array.isArray(value)) {
-    return value.map((v) => maskDeep(v)) as unknown as T;
+    return value.map((v) => maskDeep(v, options)) as unknown as T;
   }
   if (value && typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      out[k] = maskDeep(v);
+      out[k] = maskDeep(v, options);
     }
     return out as T;
   }

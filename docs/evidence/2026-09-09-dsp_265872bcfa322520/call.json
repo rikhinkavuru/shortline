@@ -7,7 +7,7 @@
     {
       "id": "rcp_fb68d3b267dfd233",
       "phones": [
-        "+1 415 ••• 0190"
+        "+14155550190"
       ],
       "region": null,
       "locale": null,
@@ -25,10 +25,10 @@
       "attempts": [
         {
           "id": "att_760533e054f92e84",
-          "phone": "+1 415 ••• 0190",
+          "phone": "+14155550190",
           "status": "completed",
-          "started_at": "2026-09-09T23:47:41.032278Z",
-          "completed_at": "2026-09-09T23:48:27.636125Z",
+          "started_at": "2026-09-09T19:47:41",
+          "completed_at": "2026-09-09T19:48:28",
           "summary": null,
           "transcript_turns": [
             {
