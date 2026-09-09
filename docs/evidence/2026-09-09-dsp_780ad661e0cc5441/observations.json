@@ -1,0 +1,27 @@
+[
+  {
+    "id": "obs_227a3021e0911694",
+    "watchId": "amoxicillin-susp",
+    "findRequestId": "fnd_4f8f3f45c721d960",
+    "siteId": "demo-me",
+    "dispatchId": "dsp_780ad661e0cc5441",
+    "callId": "call_XAMZ5x6hkb9A0jH3PPgyaw",
+    "recipientId": "rcp_73f7c3a8c892dba6",
+    "source": "find",
+    "observedAt": "2026-09-09T23:54:10.298504Z",
+    "outcome": "refused",
+    "answeredBy": "human",
+    "reachedPharmacy": "yes",
+    "restockExpectation": "",
+    "quantityNote": "",
+    "evidenceQuote": "can't give out stock information over the phone",
+    "taskConfidenceScore": 0.92,
+    "taskConfidenceLabel": "high",
+    "doNotCallRequest": false,
+    "holdResponse": "not_asked",
+    "usable": false,
+    "usableReason": "refused",
+    "simulated": false,
+    "transcriptTurns": 12
+  }
+]
