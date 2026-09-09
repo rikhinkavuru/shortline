@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
@@ -52,6 +52,21 @@ export function createApp(ctx: AppContext): Hono {
   app.get("/", (c) => c.html(asset("index.html")));
   app.get("/app.js", (c) => c.body(asset("app.js"), 200, { "content-type": "text/javascript; charset=utf-8" }));
   app.get("/styles.css", (c) => c.body(asset("styles.css"), 200, { "content-type": "text/css; charset=utf-8" }));
+
+  // Any additional UI asset (modules, icons) under src/server/ui, served read-only with a bounded path.
+  const MIME: Record<string, string> = { ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".json": "application/json; charset=utf-8", ".html": "text/html; charset=utf-8" };
+  app.get("/ui/*", (c) => {
+    const rel = normalize(c.req.path.replace(/^\/ui\//, "")).replace(/^(\.\.[/\\])+/, "");
+    if (rel.includes("..") || rel.startsWith("/")) {
+      return c.text("not found", 404);
+    }
+    const file = join(here, "ui", rel);
+    const type = MIME[extname(file)];
+    if (!type || !existsSync(file)) {
+      return c.text("not found", 404);
+    }
+    return c.body(readFileSync(file), 200, { "content-type": type, "cache-control": "no-cache" });
+  });
 
   app.get("/api/state", (c) => c.json(maskDeep(snapshotState(ctx, c.req.query("watch") ?? null))));
 

@@ -11,6 +11,8 @@ export interface Config {
   liveAck: boolean;
   keepTranscriptsDays: number;
   callerName: string;
+  /** Optional operator name for the dashboard greeting. */
+  operatorName: string | null;
   /** Milliseconds per fake call stage in dry-run mode; 0 means instant. */
   fakePaceMs: number;
   /** Max recipients per CALL-E call task. */
@@ -33,6 +35,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     liveAck: env.SHORTLINE_LIVE_ACK === LIVE_ACK_PHRASE,
     keepTranscriptsDays: Number(env.SHORTLINE_KEEP_TRANSCRIPTS_DAYS ?? 14),
     callerName: env.SHORTLINE_CALLER_NAME ?? "Shortline",
+    operatorName: env.SHORTLINE_OPERATOR_NAME?.trim() || null,
     fakePaceMs: Number(env.SHORTLINE_FAKE_PACE_MS ?? 0),
     batchSize: Math.max(1, Math.min(20, Number(env.SHORTLINE_BATCH_SIZE ?? 6))),
     pollIntervalMs: Number(env.SHORTLINE_POLL_INTERVAL_MS ?? 5000)

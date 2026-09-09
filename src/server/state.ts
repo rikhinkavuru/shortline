@@ -73,6 +73,7 @@ export function snapshotState(ctx: AppContext, watchId: string | null): Record<s
     window: watch?.window ?? null,
     week,
     callerName: ctx.config.callerName,
+    operatorName: ctx.config.operatorName,
     watches: watches.map((w) => ({ id: w.id, product: w.product, status: w.status, regions: w.regions })),
     watch,
     estimates: watch ? ctx.repo.listEstimates(watch.id) : [],
