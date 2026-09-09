@@ -1,0 +1,342 @@
+[
+  {
+    "id": "evt_d1c7b74853927fa45bfdb36e",
+    "type": "call.started",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:46:58.618185Z",
+    "level": "info",
+    "status": "completed",
+    "message": "run_call started.",
+    "details": {}
+  },
+  {
+    "id": "evt_c4e4df7886d7b182f3229ec6",
+    "type": "call.in_progress",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:02.381709Z",
+    "level": "info",
+    "status": "completed",
+    "message": "botlab create bot.",
+    "details": {}
+  },
+  {
+    "id": "evt_fced44863fb74e6b99c68b48",
+    "type": "call.in_progress",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:20.215028Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling resolve robot id.",
+    "details": {}
+  },
+  {
+    "id": "evt_75a8d035f766c66ac513b3cf",
+    "type": "call.in_progress",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:22.824200Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling create task.",
+    "details": {}
+  },
+  {
+    "id": "evt_7bbd94d4d7a145de36e6ab62",
+    "type": "call.completed",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:24.382178Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task created.",
+    "details": {}
+  },
+  {
+    "id": "evt_f205508bec186ef2cc14423b",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:25.126320Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=pending",
+    "details": {}
+  },
+  {
+    "id": "evt_48cf109cb891162c22f4bf14",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:30.282861Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=calling",
+    "details": {}
+  },
+  {
+    "id": "evt_8313df987af2148205a41604",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:36.226723Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call is ringing.",
+    "details": {}
+  },
+  {
+    "id": "evt_edd8d1a5172bd477b74025ee",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:41.403841Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call connected.",
+    "details": {}
+  },
+  {
+    "id": "evt_d34712d0d6efe6ab1531d70a",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:42.245809Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Hello,",
+    "details": {}
+  },
+  {
+    "id": "evt_9f7f0592cb91066e09d688f6",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:42.800044Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: this is an automated assistant calling for Shortline, a project that tracks medication availability;",
+    "details": {}
+  },
+  {
+    "id": "evt_34b59b0183d02591e56c9999",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:48.205466Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: this call will take under a minute, it may be recorded,",
+    "details": {}
+  },
+  {
+    "id": "evt_9d260e53ac8f186b619a16a6",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:47:51.420516Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: and if you prefer not to be called again, please tell me and I will stop.",
+    "details": {}
+  },
+  {
+    "id": "evt_5d8f849f112139e9bdf045fb",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:00.658307Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Oh, hi there.",
+    "details": {}
+  },
+  {
+    "id": "evt_2dde409a170844646095bfe8",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:04.669846Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Hey.",
+    "details": {}
+  },
+  {
+    "id": "evt_f518ea13e2a9cf2c5db57d5d",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:07.290144Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Hi.",
+    "details": {}
+  },
+  {
+    "id": "evt_37550e3fc3d06dc2faff649d",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:09.316083Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Do you currently have amoxicillin four hundred milligrams per five milliliters oral suspension in stock,",
+    "details": {}
+  },
+  {
+    "id": "evt_1bdddcb12f6765682b2c1e30",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:14.700193Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: and are you able to dispense it today?",
+    "details": {}
+  },
+  {
+    "id": "evt_7c0b8e660d6b150c79b8b851",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:19.509239Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that,",
+    "details": {}
+  },
+  {
+    "id": "evt_2c092a60663e5215dc532667",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:20.523665Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple",
+    "details": {}
+  },
+  {
+    "id": "evt_eebaba0ef0c4e4853b120037",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:21.316551Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple of bottles. The",
+    "details": {}
+  },
+  {
+    "id": "evt_4362d012785dae367c2a6c6b",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:22.356730Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple of bottles. The next delivery is",
+    "details": {}
+  },
+  {
+    "id": "evt_c5500f824d5191f9b8860d4e",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:23.139090Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple of bottles. The next delivery is on Thursday.",
+    "details": {}
+  },
+  {
+    "id": "evt_9f1d2705b5d929d1b9f8a72d",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:23.445486Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple bottles. The next delivery is on Thursday.",
+    "details": {}
+  },
+  {
+    "id": "evt_0ddbeddd77f91df1b44dfae3",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:23.795188Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yes. We have that, but only a couple of bottles. The next delivery is on Thursday.",
+    "details": {}
+  },
+  {
+    "id": "evt_fc1e48036e28f68e2de39ec8",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:24.340915Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_688a731711c24d82454682ba",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:24.765747Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_e8929d6dd082bec6fcc2a11c",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:25.071680Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Thank you for your help,",
+    "details": {}
+  },
+  {
+    "id": "evt_2cdf84b082f6783ae19c0a2e",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:25.382790Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_e86f4bf4dfd3b37579d4041e",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:25.687997Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_a23dc5281dd05e8edfb7bc6a",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:26.187726Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: bye.",
+    "details": {}
+  },
+  {
+    "id": "evt_1d2b54c43527cf1117292500",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:28.252113Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call ended; syncing final Calling result.",
+    "details": {}
+  },
+  {
+    "id": "evt_f84947e4b1425d925085c30a",
+    "type": "call.completed",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:48:34.849776Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call ended from realtime events.",
+    "details": {}
+  },
+  {
+    "id": "evt_816d949cb34aea438f83479a",
+    "type": "call.updated",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "createdAt": "2026-09-09T23:49:03.955250Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=finished",
+    "details": {}
+  }
+]

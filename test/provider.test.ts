@@ -137,3 +137,40 @@ describe("API-shaped terminal snapshot through the SDK parser", () => {
     expect(second.usableReason).toBe("not_dialled");
   });
 });
+
+describe("real CALL-E snapshot from docs/evidence", () => {
+  it("parses the exported live call through the SDK client and reproduces the stored verdict", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const { classifyRecipient } = await import("../src/domain/classify.js");
+    const dirs = readdirSync("docs/evidence").filter((d) => d.includes("dsp_"));
+    expect(dirs.length).toBeGreaterThan(0);
+    for (const dir of dirs) {
+      const raw = readFileSync(`docs/evidence/${dir}/call.json`, "utf8");
+      const stored = JSON.parse(readFileSync(`docs/evidence/${dir}/observations.json`, "utf8")) as Array<{ recipientId: string; outcome: string; usable: boolean; usableReason: string }>;
+      const snapshot = JSON.parse(raw) as { id: string; metadata: { product_label: string } };
+      const live = new LiveCalleProvider({ apiKey: "iams_live_test", baseUrl: "https://api.heycall-e.com", fetch: async () => new Response(raw, { status: 200, headers: { "content-type": "application/json" } }) });
+      const call = await live.get(snapshot.id);
+      expect(call.status).toBe("completed");
+      expect(call.metadata.app).toBe("shortline");
+      const [name, ...rest] = snapshot.metadata.product_label.split(" ");
+      const product = { name: name ?? "", strength: rest.join(" ") };
+      for (const obs of stored) {
+        const r = call.recipients.find((x) => x.id === obs.recipientId)!;
+        const attempt = r.attempts[r.attempts.length - 1];
+        const verdict = classifyRecipient(product, {
+          recipientId: r.id,
+          phone: r.phones[0] ?? "",
+          status: r.status,
+          structuredResult: r.structuredResult,
+          transcript: (attempt?.transcriptTurns ?? []).map((t) => ({ speaker: t.speaker, text: t.text })),
+          attemptFailureCode: attempt?.failureCode ?? null,
+          attemptStarted: r.attempts.some((a) => a.startedAt !== null)
+        });
+        expect(verdict.outcome).toBe(obs.outcome);
+        expect(verdict.usable).toBe(obs.usable);
+        expect(verdict.usableReason).toBe(obs.usableReason);
+        expect(r.phones[0]).toMatch(/^\+1\d{3}55501\d{2}$/);
+      }
+    }
+  });
+});

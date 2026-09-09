@@ -63,7 +63,7 @@ Details and the honest reading of each row: `docs/eval.md`.
 | --- | --- |
 | Real world impact | *Why* above; `docs/statistics.md` for what the index can and cannot claim |
 | Quality of the idea | rotating panel + evidence gates + sourcing waves fed by fresh sightings (`src/domain/`) |
-| Technical implementation | official `@call-e/calle` SDK 0.7 batch calls with `recipient_result_schema`, task-level `result_schema` cross-check, idempotency keys, terminal webhooks validated on `CALL-E-Event-Id` then reconciled through an authenticated read, developer events (`src/calle/`, `src/app/`); masked snapshots of real calls are exported with `shortline evidence` into `docs/evidence/` |
+| Technical implementation | official `@call-e/calle` SDK 0.7 batch calls with `recipient_result_schema`, task-level `result_schema` cross-check, idempotency keys, terminal webhooks validated on `CALL-E-Event-Id` then reconciled through an authenticated read, developer events (`src/calle/`, `src/app/`). **Verified against CALL-E on 2026-09-09: `call_YlsT1pFwDVuUGlQEWIsk6Q`**, a live sourcing call answered "only a couple of bottles, next delivery Thursday" and classified `limited`/verified; masked snapshot, events, and observation in `docs/evidence/`, and `test/provider.test.ts` parses that snapshot through the SDK client |
 | Product experience | dashboard with live feed and transcript evidence, CLI, MCP server, portable skill (`src/server/`, `src/cli.ts`, `src/mcp/`, `skill/shortline-find/` here, `skills/shortline-find/` in the community repo) |
 
 ## Try it in two minutes (no account, no calls)

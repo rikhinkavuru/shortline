@@ -1,0 +1,27 @@
+[
+  {
+    "id": "obs_b9accb1e5845a1f0",
+    "watchId": "amoxicillin-susp",
+    "findRequestId": "fnd_b0a33c07d42fb631",
+    "siteId": "demo-me",
+    "dispatchId": "dsp_265872bcfa322520",
+    "callId": "call_YlsT1pFwDVuUGlQEWIsk6Q",
+    "recipientId": "rcp_fb68d3b267dfd233",
+    "source": "find",
+    "observedAt": "2026-09-09T23:48:27.636125Z",
+    "outcome": "limited",
+    "answeredBy": "human",
+    "reachedPharmacy": "yes",
+    "restockExpectation": "The next delivery is on Thursday.",
+    "quantityNote": "only a couple of bottles",
+    "evidenceQuote": "only a couple of bottles",
+    "taskConfidenceScore": 0.95,
+    "taskConfidenceLabel": "high",
+    "doNotCallRequest": false,
+    "holdResponse": "not_asked",
+    "usable": true,
+    "usableReason": "verified",
+    "simulated": false,
+    "transcriptTurns": 12
+  }
+]
