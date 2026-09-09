@@ -1,6 +1,8 @@
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { CalleAPIError, CalleClient } from "@call-e/calle";
+import { exportEvidence } from "./app/evidence.js";
 import { createContext } from "./app/context.js";
 import { recomputeEstimate } from "./app/estimate.js";
 import { describeFind, planFind, runFind } from "./app/find.js";
@@ -77,13 +79,14 @@ const HELP = `shortline — phone calls as a statistical sensor network for drug
   shortline serve                                  dashboard + webhook receiver + recovery poller
   shortline sweep --watch ID [--week 2026-W37] [--wait] [--force]
   shortline estimate --watch ID [--week 2026-W37]
-  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window] [--only-site ID[,ID]] [--yes]
+  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window (dry-run only)] [--only-site ID[,ID]] [--yes]
   shortline reconcile                              replay ambiguous submissions, drain the webhook inbox
   shortline sites [--region CODE]
   shortline site add --id ID --name NAME --kind independent --phone +1... --region CODE --tz America/Los_Angeles [--lat --lng] [--test-line]
       --test-line marks your own phone: exempt from calling windows and cooldowns, never sampled, never counted in the index
-  shortline watch add --id ID --name NAME [--strength S] [--form F] --regions US-CA-SF,US-CA-EB [--panel 3] [--cooldown 14]
-  shortline opt-out --site ID [--undo] [--reason TEXT]
+  shortline watch add --id ID --name NAME [--strength S] [--form F] --regions US-CA-SF,US-CA-EB [--panel 3] [--cooldown 14] [--gap 5] [--window-start 10:00] [--window-end 17:00] [--min-usable 6]
+  shortline opt-out --site ID [--undo [--override-callee]] [--reason TEXT]
+  shortline evidence --dispatch ID [--out docs/evidence]   export a masked call snapshot, events, and observations for the record
   shortline mcp                                    MCP server over stdio
 
 Every command is dry-run unless SHORTLINE_MODE=live, CALLE_API_KEY and SHORTLINE_LIVE_ACK are all set.
@@ -275,11 +278,19 @@ async function main(): Promise<void> {
       if (!ctx.config.calleApiKey) {
         throw new Error("CALLE_API_KEY is not set");
       }
-      const base = ctx.config.calleBaseUrl ?? "https://api.heycall-e.com";
-      const res = await fetch(`${base}/v1/goals?limit=1`, { headers: { authorization: `Bearer ${ctx.config.calleApiKey}` } });
-      const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-      out({ ok: res.ok, status: res.status, mode: ctx.config.mode, goals_visible: Array.isArray(body.data) ? (body.data as unknown[]).length : null, error: res.ok ? null : (body.error ?? null) }, json);
-      if (!res.ok) {
+      // Read-only and through the official SDK: the same client, base URL, and Bearer header a sweep would use.
+      const clientOptions: { apiKey: string; baseUrl?: string } = { apiKey: ctx.config.calleApiKey };
+      if (ctx.config.calleBaseUrl) {
+        clientOptions.baseUrl = ctx.config.calleBaseUrl;
+      }
+      const client = new CalleClient(clientOptions);
+      try {
+        const goals = await client.goals.list({ limit: 1 });
+        out({ ok: true, status: 200, mode: ctx.config.mode, goals_visible: goals.data.length, sdk: "@call-e/calle" }, json);
+      } catch (error) {
+        const code = error instanceof CalleAPIError ? error.code : "transport";
+        const status = error instanceof CalleAPIError ? error.status : null;
+        out({ ok: false, status, mode: ctx.config.mode, error: code, message: error instanceof Error ? error.message : String(error) }, json);
         process.exit(1);
       }
       return;
@@ -315,8 +326,24 @@ async function main(): Promise<void> {
     }
     case "opt-out": {
       const id = str(flags, "site");
-      ctx.repo.setOptOut(id, !flags.undo, typeof flags.reason === "string" ? flags.reason : "operator");
+      const result = ctx.repo.setOptOut(id, !flags.undo, typeof flags.reason === "string" ? flags.reason : "operator", { overrideCallee: Boolean(flags["override-callee"]) });
+      if (!result.ok) {
+        throw new Error(`${id} asked not to be called (${result.reason}); re-run with --override-callee only if that request was withdrawn`);
+      }
       out({ ok: true, site: id, optOut: !flags.undo }, json);
+      return;
+    }
+    case "evidence": {
+      const dispatchId = str(flags, "dispatch");
+      const dir = str(flags, "out", join(root, "docs", "evidence"));
+      const bundle = await exportEvidence(ctx, dispatchId);
+      const target = join(dir, `${bundle.exportedAt.slice(0, 10)}-${dispatchId}`);
+      mkdirSync(target, { recursive: true });
+      writeFileSync(join(target, "call.json"), `${JSON.stringify(bundle.call, null, 2)}\n`);
+      writeFileSync(join(target, "events.json"), `${JSON.stringify(bundle.events, null, 2)}\n`);
+      writeFileSync(join(target, "observations.json"), `${JSON.stringify(bundle.observations, null, 2)}\n`);
+      writeFileSync(join(target, "README.md"), bundle.readme);
+      out({ ok: true, dir: target, callId: bundle.call.id, mode: bundle.mode, recipients: bundle.call.recipients.length }, json);
       return;
     }
     case "mcp": {

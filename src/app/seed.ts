@@ -82,7 +82,7 @@ export async function simulateHistory(ctx: AppContext, watchId: string, weeks: n
   const fake = ctx.provider as FakeCalleProvider;
   const realNow = ctx.now();
   const done: string[] = [];
-  const finalPressure = options.finalPressure ?? 0.75;
+  const finalPressure = options.finalPressure ?? 1.0;
   try {
     for (let back = weeks; back >= 1; back -= 1) {
       // Same weekday and time as now, `back` weeks earlier, so cooldowns line

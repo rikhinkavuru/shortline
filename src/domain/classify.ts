@@ -9,6 +9,8 @@ export interface RecipientSnapshot {
   structuredResult: Record<string, unknown> | null;
   transcript: Array<{ speaker: string; text: string }>;
   attemptFailureCode: string | null;
+  /** Whether any dial attempt actually started (distinguishes skipped/pending from failed). */
+  attemptStarted?: boolean;
 }
 
 export interface Classification {
@@ -54,21 +56,59 @@ export function productWasAsked(product: Product, transcript: RecipientSnapshot[
   return nameTokens.some((t) => botText.includes(t));
 }
 
-/** True if the quote's content words appear in what the callee said. */
+/** Lowercase, drop apostrophes (straight and curly), everything else non-alphanumeric becomes a space. */
+export function normalizePhrase(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u2019'`]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * True if the quote appears as a contiguous phrase in ONE callee turn.
+ *
+ * A bag-of-words overlap is not enough: after stop words, "we have that in
+ * stock" reduces to "stock", which also matches "we are completely out of
+ * stock". The rule is therefore: normalised quote of at least two words found
+ * whole in a single non-bot turn; failing that, the quote's content tokens
+ * appear in order and adjacent in that turn's content-token stream (this
+ * absorbs small ASR drift such as a dropped article).
+ */
 export function quoteIsAttributed(quote: string, transcript: RecipientSnapshot["transcript"]): boolean {
-  const userText = transcript
-    .filter((t) => t.speaker !== "bot")
-    .map((t) => t.text.toLowerCase())
-    .join(" ");
-  if (!userText) {
+  const nq = normalizePhrase(quote);
+  if (nq.split(" ").filter(Boolean).length < 2) {
     return false;
   }
-  const words = tokens(quote);
-  if (words.length === 0) {
-    return false;
+  const contentQuote = tokens(quote);
+  for (const turn of transcript) {
+    if (turn.speaker === "bot") {
+      continue;
+    }
+    const nt = normalizePhrase(turn.text);
+    if (!nt) {
+      continue;
+    }
+    if (` ${nt} `.includes(` ${nq} `)) {
+      return true;
+    }
+    if (contentQuote.length >= 2) {
+      const stream = tokens(turn.text);
+      for (let i = 0; i + contentQuote.length <= stream.length; i += 1) {
+        let ok = true;
+        for (let j = 0; j < contentQuote.length; j += 1) {
+          if (stream[i + j] !== contentQuote[j]) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) {
+          return true;
+        }
+      }
+    }
   }
-  const hits = words.filter((w) => userText.includes(w)).length;
-  return hits / words.length >= 0.6;
+  return false;
 }
 
 function str(value: unknown): string {
@@ -102,8 +142,11 @@ export function classifyRecipient(product: Product, snap: RecipientSnapshot, pol
     flags
   };
   const sr = snap.structuredResult;
-  if (snap.status === "failed" || snap.status === "canceled") {
-    return { ...base, outcome: "unreachable", usableReason: `recipient_${snap.status}` };
+  if (snap.status !== "completed") {
+    // RecipientStatus is pending | in_progress | completed | failed | skipped. Anything
+    // that did not complete is not an observation; say whether a dial ever started.
+    const started = snap.attemptStarted ?? snap.status === "failed";
+    return { ...base, outcome: "unreachable", usableReason: started ? `recipient_${snap.status}` : "not_dialled" };
   }
   if (!sr) {
     return { ...base, outcome: "unknown", usableReason: "no_structured_result" };

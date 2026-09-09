@@ -42,9 +42,26 @@ describe("combineStrata", () => {
     expect(out.method).toBe("stratified");
     expect(out.pHat).toBeCloseTo(0.75, 10);
     expect(out.coverage).toBe(1);
-    // p̂_h ∈ {0, 1} in both strata -> zero sampling variance -> interval collapses on the point.
-    expect(out.low).toBeCloseTo(0.75, 10);
-    expect(out.high).toBeCloseTo(0.75, 10);
+    // Unanimous strata give zero design variance, but five answers are not a census:
+    // the band is the Wilson interval on the raw usable count, never a point.
+    expect(out.nEff).toBe(5);
+    expect(out.high - out.low).toBeGreaterThan(0.3);
+    expect(out.low).toBeLessThan(0.75);
+    expect(out.high).toBeGreaterThan(0.75);
+  });
+  it("matches the checked effective-sample-size values", () => {
+    const six = (available: number) => Array.from({ length: 6 }, (_, i) => stratum({ stratum: `s${i}`, frameSize: 6, usable: 3, available }));
+    const allOut = combineStrata(six(0));
+    expect(allOut.pHat).toBe(0);
+    expect(allOut.high).toBeCloseTo(0.176, 2);
+    const oneIn = combineStrata([stratum({ stratum: "s0", frameSize: 6, usable: 3, available: 3 }), ...six(0).slice(1)]);
+    expect(oneIn.pHat).toBeCloseTo(1 / 6, 6);
+    expect(oneIn.low).toBeCloseTo(0.058, 2);
+    expect(oneIn.high).toBeCloseTo(0.392, 2);
+    const mixed = combineStrata(six(1));
+    expect(mixed.nEff).toBeCloseTo(24, 0);
+    expect(mixed.low).toBeCloseTo(0.18, 2);
+    expect(mixed.high).toBeCloseTo(0.533, 2);
   });
   it("falls back to a pooled Wilson interval when a stratum has one usable observation", () => {
     const out = combineStrata([stratum({ stratum: "a", usable: 1, available: 1 }), stratum({ stratum: "b", usable: 4, available: 1 })]);

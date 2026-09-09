@@ -8,12 +8,14 @@ Phone calls are real-world side effects. This document is the contract.
 | --- | --- | --- |
 | Provider | scripted fake, in process | official `@call-e/calle` SDK |
 | Network | none | api.heycall-e.com |
-| Requirements | none | `SHORTLINE_MODE=live`, `CALLE_API_KEY`, `SHORTLINE_LIVE_ACK=<exact phrase>` |
+| Requirements | none | `SHORTLINE_MODE=live`, `CALLE_API_KEY`, `SHORTLINE_LIVE_ACK=<exact phrase>`, `SHORTLINE_CALLER_NAME` |
 | Fixture numbers (555-01XX) | dialled by the fake | refused before any request leaves the process |
-| `--force` / ignore calling hours | allowed | refused |
+| `--force` / ignore calling hours | allowed | refused by the CLI and MCP (`resolveIgnoreWindow` throws); the dashboard hides the checkbox and the server masks it |
 | Dashboard | open | requires `SHORTLINE_AUTH_TOKEN` |
 
-`loadConfig` throws if live mode is requested without both the key and the acknowledgement phrase. There is no flag that removes the acknowledgement.
+`loadConfig` throws if live mode is requested without the key, the acknowledgement phrase, and an explicit caller name to disclose. There is no flag that removes the acknowledgement.
+
+**Test lines.** A site added with `--test-line` is the operator's own phone. It is exempt from calling windows and cooldowns so a smoke test works at any hour, may be targeted by a sourcing request (`--only-site`), and is never sampled by a sweep or counted in an estimate.
 
 ## Explicit intent
 
@@ -29,12 +31,14 @@ Every task text opens with a disclosure that the caller is an automated assistan
 
 ## Courtesy budget
 
-- One ask per site per product per `cooldownDays` (14).
-- One Shortline call per site for any reason per `globalMinGapDays` (5).
+- One ask per site per product per `cooldownDays` (14), counted in whole ISO weeks: never in the same or the previous week.
+- One Shortline call per site for any reason per `globalMinGapDays` (5). A dispatch that reached CALL-E counts as a call even before its observation lands.
+- Never two Shortline calls to one site at the same time: sites with a dispatch reserved, ambiguous, or in flight are skipped by both sweeps and sourcing (`call_in_flight`).
 - A refusal rests the site for 90 days for that product.
 - Two consecutive "not reached" outcomes mark the number wrong and remove it from every frame.
-- A `do_not_call_request` opts the site out of everything, permanently, and is recorded in the audit table with the call id that triggered it.
-- Sourcing requests never dial a site twice in the same request and skip anything called in the last 24 hours.
+- A `do_not_call_request` opts the site out of everything, permanently, and is recorded in the audit table with the call id that triggered it. An operator cannot reverse it from the dashboard; the CLI requires `--override-callee`, and the callee's reason is never overwritten.
+- Sourcing requests never dial a site twice in the same request, skip anything called in the last 24 hours, and count toward the site's rest.
+- Product text that reaches a task is bounded (2 to 60 plain characters, allow-listed) whether it comes from a fixture, the CLI, the dashboard, or an agent through MCP. The human plan approval is the real control; the bound stops newlines and instructions.
 
 ## No cancellation
 
@@ -47,7 +51,7 @@ Following the community production guide:
 1. The dispatch row (sites, task text, schema version, idempotency key) is committed **before** the request is sent.
 2. The idempotency key is derived from the business action (watch + week + site set, or find request + wave), never from an attempt.
 3. A transport failure on create is recorded as `submission_unknown`. Shortline never creates a new key or a new dispatch to "retry"; `reconcilePending` replays the same key and body, and CALL-E returns the original call task if one was accepted.
-4. Webhooks are acknowledged only after the event id is committed to the inbox. Identical redelivery is ignored; a different body under the same id is quarantined, never overwritten.
+4. Webhooks are acknowledged only after the event id is committed to the inbox. A delivery whose call id is not bound to one of our dispatches is answered 200 and not stored (it could not wake anything useful; if it raced the binding, the next poll reconciles). Identical redelivery is ignored; a different body under the same id is quarantined, never overwritten. The route accepts at most 2 MB. Reconciliation is single-flight per process: concurrent wake-ups share one run and schedule at most one follow-up, and the poller doubles its interval up to 60 s while CALL-E rate-limits reads.
 5. The webhook body is never trusted for a result. The reconciler fetches the call with the API key, checks the metadata binding (`dispatch_id`), and binds each recipient to a reserved site by exact phone match. Any mismatch stops in `needs_human` with the reason written down.
 6. The task-level `pharmacies_reached` cross-check is compared with the recipient results; disagreement is flagged, recipient results win.
 
@@ -74,4 +78,5 @@ Shortline asks pharmacies about stock of a named product. It:
 
 - **Prompt injection from callees.** Nothing said on a call is treated as an instruction. Structured results are validated against enums; free-text fields are stored, never executed, and masked.
 - **Poisoned observations.** One caller cannot move the index far: strata are weighted, intervals are wide at small n, and the shortage signal fires on the upper bound.
-- **Public dashboard.** Serving in live mode without `SHORTLINE_AUTH_TOKEN` is refused. The webhook route is intentionally unauthenticated (CALL-E does not sign deliveries) and can only *wake* a reconciliation that then reads through the authenticated API.
+- **Public dashboard.** Serving in live mode without `SHORTLINE_AUTH_TOKEN` is refused. The webhook route is intentionally unauthenticated (CALL-E does not sign deliveries) and can only *wake* a reconciliation that then reads through the authenticated API; unknown call ids are dropped before anything is stored.
+- **Known gaps.** A site that opts out while it sits inside a reserved or ambiguous batch is still part of that batch's replay (the batch is replayed byte-identical by design); the observation is recorded and the opt-out applies from then on. A wrong-number verdict comes from two consecutive "not reached" outcomes and has no undo other than editing the site. Transcripts are purged by the poller, so an installation that never runs `serve` keeps them until it does.

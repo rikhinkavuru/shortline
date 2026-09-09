@@ -1,5 +1,35 @@
 import type { Product } from "./types.js";
 
+const PRODUCT_TEXT = /^[A-Za-z0-9][A-Za-z0-9 .,'/%()+-]*$/;
+
+/**
+ * Product text is spoken to a stranger by the assistant, so it is bounded and
+ * allow-listed before it can reach a task. The human plan approval remains the
+ * real control; this stops newlines, instructions, and oversized strings.
+ */
+export function assertProduct(product: Product): Product {
+  const name = product.name.trim();
+  if (name.length < 2 || name.length > 60 || !PRODUCT_TEXT.test(name)) {
+    throw new Error("product name must be 2-60 characters of letters, digits, spaces and . , ' / % ( ) + -");
+  }
+  for (const [label, value] of [["strength", product.strength], ["form", product.form]] as const) {
+    if (value !== undefined && (value.length > 30 || (value.length > 0 && !PRODUCT_TEXT.test(value)))) {
+      throw new Error(`product ${label} must be at most 30 plain characters`);
+    }
+  }
+  const out: Product = { name };
+  if (product.strength?.trim()) {
+    out.strength = product.strength.trim();
+  }
+  if (product.form?.trim()) {
+    out.form = product.form.trim();
+  }
+  if (product.code?.trim()) {
+    out.code = product.code.trim().slice(0, 40);
+  }
+  return out;
+}
+
 export function productLabel(product: Product): string {
   return [product.name, product.strength, product.form].filter((v): v is string => Boolean(v && v.trim())).join(" ");
 }
@@ -21,7 +51,7 @@ export interface TaskOptions {
 export function buildTaskText(opts: TaskOptions): string {
   const label = productLabel(opts.product);
   const lines = [
-    `You are calling a pharmacy. Identify yourself immediately as an automated assistant calling for ${opts.callerName}, a project that tracks medication availability, and say the call will take under a minute.`,
+    `You are calling a pharmacy. Identify yourself immediately as an automated assistant calling for ${opts.callerName}, a project that tracks medication availability. Say the call will take under a minute, that it may be recorded, and that they can ask not to be called again and you will stop.`,
     `If you reach a phone menu, choose the option for the pharmacy or to speak with pharmacy staff. Use the keypad when the menu asks for it. If you reach voicemail, do not leave a message and end the call.`,
     `Once you are speaking with pharmacy staff, ask one question: whether they currently have ${label} in stock and able to dispense today.`,
     `If they say yes, ask whether supply is limited. If they say no or limited, ask when they expect the next delivery.`,

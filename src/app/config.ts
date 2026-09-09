@@ -45,6 +45,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     if (!config.liveAck) {
       missing.push(`SHORTLINE_LIVE_ACK=${LIVE_ACK_PHRASE}`);
     }
+    if (!env.SHORTLINE_CALLER_NAME || !env.SHORTLINE_CALLER_NAME.trim()) {
+      missing.push("SHORTLINE_CALLER_NAME (the name the assistant discloses on every call)");
+    }
     if (missing.length > 0) {
       throw new Error(`SHORTLINE_MODE=live refuses to start without: ${missing.join(", ")}`);
     }

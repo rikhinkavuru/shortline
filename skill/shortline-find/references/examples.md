@@ -28,18 +28,19 @@ Response (abridged):
     { "name": "Mission Family Pharmacy", "phone": "+1 415 ••• 0107", "outcome": "in_stock", "observedAt": "2026-09-07T18:04:11Z", "evidenceQuote": "yes, we have that in stock" }
   ],
   "candidates": [
-    { "name": "Noe Valley Pharmacy", "phone": "+1 415 ••• 0110", "basis": "unknown", "distanceKm": 1.4 },
-    { "name": "Bayline Pharmacy #102", "phone": "+1 415 ••• 0102", "basis": "unknown", "distanceKm": 2.9 },
-    { "name": "Golden Gate Apothecary", "phone": "+1 415 ••• 0108", "basis": "unknown", "distanceKm": 3.3 }
+    { "siteId": "sf-ind-4", "name": "Noe Valley Pharmacy", "phoneMasked": "+1 415 ••• 0110", "basis": "unknown", "distanceKm": 1.4, "kind": "independent" },
+    { "siteId": "sf-chn-2", "name": "Bayline Pharmacy #102", "phoneMasked": "+1 415 ••• 0102", "basis": "unknown", "distanceKm": 2.9, "kind": "chain" },
+    { "siteId": "sf-ind-2", "name": "Golden Gate Apothecary", "phoneMasked": "+1 415 ••• 0108", "basis": "unknown", "distanceKm": 3.3, "kind": "independent" }
   ],
-  "skipped": [ { "name": "Sunset Neighborhood Rx", "reason": "observed_out_of_stock_recently" } ],
-  "estimated_calls": 2
+  "skipped": [ { "siteId": "sf-ind-3", "name": "Sunset Neighborhood Rx", "reason": "observed_out_of_stock_recently" } ],
+  "first_wave_calls": 2,
+  "max_calls": 3
 }
 ```
 
 The agent shows this to the user:
 
-> One pharmacy was seen in stock three hours ago, so no call is needed for it. To confirm a second, Shortline would call up to 2 nearby pharmacies (masked numbers above), in dry-run mode. Place the calls?
+> One pharmacy was seen in stock three hours ago, so no call is needed for it. To confirm a second, Shortline would call 2 nearby pharmacies now and at most 3 in total (masked numbers above), in dry-run mode. Place the calls?
 
 Only after "yes" does the agent call `shortline_run_find` with `{ "find_request_id": "fnd_1a2b3c", "confirm": true }`.
 
@@ -47,13 +48,13 @@ Only after "yes" does the agent call `shortline_run_find` with `{ "find_request_
 
 From `shortline_get_find`:
 
-> Two sources confirmed. **Mission Family Pharmacy** (+1 415 ••• 0107): in stock, "yes, we have that in stock", observed 3h ago from surveillance. **Bayline Pharmacy #102** (+1 415 ••• 0102): limited, "we only have a couple of bottles left", next delivery Thursday, confirmed just now. Not counted: Noe Valley Pharmacy reached voicemail; Golden Gate Apothecary's phone menu never reached a person.
+> Two sources confirmed. **Mission Family Pharmacy** (+1 415 ••• 0107): in stock, "yes, we have that in stock", observed 3h ago by the weekly monitoring sweep. **Bayline Pharmacy #102** (+1 415 ••• 0102): limited, "we only have a couple of bottles left", next delivery Thursday, confirmed just now. Not counted: Noe Valley Pharmacy reached voicemail; Golden Gate Apothecary's phone menu never reached a person.
 
 Unusable attempts are listed with their reason and are not presented as "no".
 
 ## 4. What the agent says when a wave stops in `needs_human`
 
-> Shortline stopped this request: the call CALL-E returned was not bound to the dispatch Shortline reserved (binding mismatch). Nothing was recorded from it. A person should look at dispatch `dsp_…` before anything is re-run. I will not retry on my own.
+> Shortline stopped this request: the call CALL-E returned was not bound to the dispatch Shortline reserved (binding mismatch, from the halt note). Nothing was recorded from it. A person should look at dispatch `dsp_…` before anything is re-run. I will not retry on my own.
 
 ## 5. Refusing out-of-scope requests
 

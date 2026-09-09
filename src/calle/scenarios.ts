@@ -271,10 +271,10 @@ export function pickScenario(roll: number, mix: Array<[string, number]> = DEFAUL
 export function mixUnderPressure(pressure: number): Array<[string, number]> {
   const p = Math.max(0, Math.min(1, pressure));
   return [
-    ["in_stock_human", Math.round(34 * (1 - p) + 4)],
-    ["ivr_then_in_stock", Math.round(10 * (1 - p) + 2)],
-    ["limited_human", Math.round(8 + 14 * p)],
-    ["out_of_stock_human", Math.round(8 + 44 * p)],
+    ["in_stock_human", Math.round(36 * (1 - p) + 2)],
+    ["ivr_then_in_stock", Math.round(11 * (1 - p) + 1)],
+    ["limited_human", Math.round(8 + 4 * p - 6 * p * p)],
+    ["out_of_stock_human", Math.round(8 + 64 * p)],
     ["refused", 5],
     ["voicemail", 7],
     ["no_answer", 5],

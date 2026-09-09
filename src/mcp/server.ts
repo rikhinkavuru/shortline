@@ -69,10 +69,17 @@ export function buildMcpServer(ctx: AppContext): McpServer {
     {
       title: "Plan a sourcing request (no call)",
       description:
-        "Plan which pharmacies would be called, in waves, to find a product in a region. Returns known sources from recent surveillance (no call needed), the ranked candidates with masked numbers, and the estimated number of calls. Does NOT place any call.",
+        "Plan which pharmacies would be called, in waves, to find a product in a region. Returns known sources from recent monitoring (no call needed), the ranked candidates with masked numbers, the calls the first wave would place, and the maximum the whole request could place. Does NOT place any call.",
       inputSchema: {
         watch_id: z.string().optional().describe("Use the watched product's settings."),
-        product: z.object({ name: z.string(), strength: z.string().optional(), form: z.string().optional() }).optional().describe("Ad-hoc product when no watch exists."),
+        product: z
+          .object({
+            name: z.string().min(2).max(60).regex(/^[A-Za-z0-9][A-Za-z0-9 .,'/%()+-]*$/),
+            strength: z.string().max(30).regex(/^[A-Za-z0-9][A-Za-z0-9 .,'/%()+-]*$/).optional(),
+            form: z.string().max(30).regex(/^[A-Za-z0-9][A-Za-z0-9 .,'/%()+-]*$/).optional()
+          })
+          .optional()
+          .describe("Ad-hoc product when no watch exists. Plain text only; this is spoken to a stranger."),
         region: z.string().describe("Region code, e.g. US-CA-SF"),
         need: z.number().int().min(1).max(10).optional().describe("Confirmed sources wanted (default 2)"),
         wave_size: z.number().int().min(1).max(6).optional(),
@@ -111,8 +118,9 @@ export function buildMcpServer(ctx: AppContext): McpServer {
         known_sources_no_call_needed: preview.knownSources,
         candidates: preview.candidates,
         skipped: preview.skipped,
-        estimated_calls: preview.estimatedCalls,
-        next_step: "Show this plan to the user. Only call shortline_run_find with confirm=true after the user explicitly approves placing these calls."
+        first_wave_calls: preview.firstWaveCalls,
+        max_calls: preview.maxCalls,
+        next_step: `Show this plan to the user: the first wave places ${preview.firstWaveCalls} call(s) and the request may place up to ${preview.maxCalls}. Only call shortline_run_find with confirm=true after the user explicitly approves.`
       });
     }
   );
@@ -134,8 +142,12 @@ export function buildMcpServer(ctx: AppContext): McpServer {
       if (confirm !== true) {
         return text({ error: "confirm_required", message: "Ask the user to approve the plan, then call again with confirm=true." });
       }
-      const result = await runFind(ctx, find_request_id, { confirm: true, ignoreWindow: Boolean(ignore_calling_window) && ctx.config.mode !== "live" });
-      return text({ mode: ctx.config.mode, ...describeFind(ctx, result) });
+      try {
+        const result = await runFind(ctx, find_request_id, { confirm: true, ignoreWindow: Boolean(ignore_calling_window) });
+        return text({ mode: ctx.config.mode, ...describeFind(ctx, result) });
+      } catch (error) {
+        return text({ error: error instanceof Error ? error.message : String(error) });
+      }
     }
   );
 

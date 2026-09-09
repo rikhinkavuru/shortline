@@ -31,6 +31,8 @@ button, input, select { font: inherit; }
 .badge { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; border-radius: 4px; border: 1px solid var(--line); color: var(--paper-2); }
 .badge.dry { border-color: var(--blue); color: var(--blue); }
 .badge.live { border-color: var(--red); color: var(--red); background: rgba(255,90,78,.08); }
+.topbar-check { display: flex; align-items: center; gap: 6px; color: var(--paper-2); font-size: 12px; white-space: nowrap; }
+.table-scroll { overflow-x: auto; }
 .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--paper-3); }
 .live-dot.on { background: var(--green); box-shadow: 0 0 10px var(--green); }
 
@@ -154,6 +156,8 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 .turn .off { font-family: var(--mono); font-size: 11px; color: var(--paper-3); }
 .turn.bot .txt { color: var(--paper-2); }
 .turn .txt mark { background: rgba(61,220,132,.25); color: var(--paper); padding: 0 2px; border-radius: 2px; }
+.turn.evidence .txt { background: rgba(61,220,132,.12); border-left: 2px solid var(--green); padding-left: 6px; border-radius: 2px; }
+.feed li.notice .m::before { content: "!"; display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; background: var(--amber); color: var(--ink); font-weight: 700; font-size: 10px; margin-right: 6px; }
 
 .foot { padding: 14px 22px 30px; color: var(--paper-3); font-size: 12px; border-top: 1px solid var(--line); }
 .empty { color: var(--paper-3); font-size: 13px; padding: 10px 0; }

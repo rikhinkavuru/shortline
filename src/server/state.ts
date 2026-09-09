@@ -1,7 +1,7 @@
 import { maskPhone } from "../domain/phone.js";
-import { isoWeek } from "../domain/time.js";
+import { isoWeek, localClock, withinWindow } from "../domain/time.js";
 import type { AppContext } from "../app/context.js";
-import { describeFind } from "../app/find.js";
+import { describeFind, sitesInFlight } from "../app/find.js";
 
 /** Everything the dashboard needs, with every phone number masked. */
 export function snapshotState(ctx: AppContext, watchId: string | null): Record<string, unknown> {
@@ -54,11 +54,23 @@ export function snapshotState(ctx: AppContext, watchId: string | null): Record<s
   }));
   const sweep = watch ? ctx.repo.getSweep(watch.id, week) : null;
   const sweepDispatches = sweep ? ctx.repo.listDispatches({ sweepId: sweep.id }) : [];
-  const dispatchedSites = new Set(sweepDispatches.flatMap((d) => d.siteIds));
+  const dispatchedSites = new Set(sweepDispatches.filter((d) => d.state !== "needs_human" || d.callId !== null).flatMap((d) => d.siteIds));
   const verifiedSites = new Set(sweepDispatches.filter((d) => d.state === "terminal_verified").flatMap((d) => d.siteIds));
+  const inFlight = sitesInFlight(ctx);
+  const now = ctx.now();
+  const waitingForWindow = sweep && watch
+    ? sweep.plannedSiteIds.filter((id) => {
+        const s = ctx.repo.getSite(id);
+        return s && !s.optOut && !s.testLine && !dispatchedSites.has(id) && !withinWindow(s.timezone, watch.window, now);
+      }).length
+    : 0;
+  const firstZone = sites.find((s) => watch?.regions.includes(s.region))?.timezone ?? null;
+  const localNow = firstZone ? { timezone: firstZone, ...localClock(firstZone, now) } : null;
   return {
     mode: ctx.config.mode,
     now: ctx.now().toISOString(),
+    localNow,
+    window: watch?.window ?? null,
     week,
     callerName: ctx.config.callerName,
     watches: watches.map((w) => ({ id: w.id, product: w.product, status: w.status, regions: w.regions })),
@@ -72,6 +84,9 @@ export function snapshotState(ctx: AppContext, watchId: string | null): Record<s
           planned: sweep.plannedSiteIds.length,
           dispatched: dispatchedSites.size,
           verified: verifiedSites.size,
+          waitingForWindow,
+          inFlight: sweep.plannedSiteIds.filter((id) => inFlight.has(id) && !dispatchedSites.has(id)).length,
+          needsHuman: sweepDispatches.filter((d) => d.state === "needs_human").length,
           undersampled: sweep.undersampledStrata,
           plannedSites: sweep.plannedSiteIds.map((id) => ({ id, name: siteName.get(id) ?? id, dispatched: dispatchedSites.has(id), verified: verifiedSites.has(id) }))
         }
@@ -79,7 +94,11 @@ export function snapshotState(ctx: AppContext, watchId: string | null): Record<s
     dispatches,
     observations,
     sites,
-    finds: ctx.repo.listFinds(6).map((f) => describeFind(ctx, f)),
+    finds: ctx.repo
+      .listFinds(12)
+      .filter((f) => f.status !== "planned" && !(f.status === "stopped" && f.usedSiteIds.length === 0))
+      .slice(0, 6)
+      .map((f) => describeFind(ctx, f)),
     audit: ctx.repo.listAudit(40),
     events: ctx.bus.history(150)
   };

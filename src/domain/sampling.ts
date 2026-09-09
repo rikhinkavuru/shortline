@@ -1,6 +1,6 @@
 import { stratumKey } from "./ids.js";
 import { seededShuffle } from "./random.js";
-import { daysBetween, withinWindow } from "./time.js";
+import { daysBetween, isoWeek, isoWeeksBetween, withinWindow } from "./time.js";
 import type { Site, Watch } from "./types.js";
 
 export interface SiteHistory {
@@ -56,7 +56,9 @@ export function ineligibility(input: EligibilityInput): Ineligibility | null {
   if (history.refusedAt && daysBetween(history.refusedAt, now) < refusalDays) {
     return "refused_recently";
   }
-  if (history.lastAskedForWatch && daysBetween(history.lastAskedForWatch, now) < watch.cooldownDays) {
+  // Cooldown is counted in ISO weeks so a weekly cron that fires a few minutes
+  // early never sees the whole panel as "asked 13.99 days ago" and plans nothing.
+  if (history.lastAskedForWatch && isoWeeksBetween(isoWeek(history.lastAskedForWatch), isoWeek(now)) < Math.ceil(watch.cooldownDays / 7)) {
     return "watch_cooldown";
   }
   if (history.lastCalledAny && daysBetween(history.lastCalledAny, now) < watch.globalMinGapDays) {

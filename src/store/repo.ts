@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { assertProduct } from "../domain/task.js";
 import type { SiteHistory } from "../domain/sampling.js";
 import type { Dispatch, DispatchState, Estimate, FindRequest, Observation, Site, Sweep, Watch } from "../domain/types.js";
 import { type Db, withTx } from "./db.js";
@@ -145,15 +146,31 @@ export class Repo {
     return row ? rowToSite(row) : null;
   }
 
-  setOptOut(siteId: string, optOut: boolean, reason: string | null): void {
+  /**
+   * Operators may opt a site out or back in. A request *made by the callee on a
+   * call* is different: it is kept verbatim and can only be reversed with an
+   * explicit override, and never overwritten by an operator reason.
+   */
+  setOptOut(siteId: string, optOut: boolean, reason: string | null, options: { overrideCallee?: boolean } = {}): { ok: true } | { ok: false; error: "callee_opt_out"; reason: string } {
+    const current = this.getSite(siteId);
+    const calleeReason = current?.optOutReason && current.optOutReason.startsWith("asked on call ") ? current.optOutReason : null;
+    if (calleeReason && !options.overrideCallee) {
+      if (!optOut) {
+        return { ok: false, error: "callee_opt_out", reason: calleeReason };
+      }
+      // Already opted out at the callee's request; keep their reason.
+      return { ok: true };
+    }
     this.db.prepare("UPDATE sites SET opt_out = ?, opt_out_reason = ? WHERE id = ?").run(optOut ? 1 : 0, reason, siteId);
     this.audit("site", siteId, null, optOut ? "opted_out" : "opt_in", reason);
+    return { ok: true };
   }
 
   // ---- watches -----------------------------------------------------------
 
   upsertWatch(watch: Watch): void {
-    this.db.prepare("INSERT INTO watches (id, json) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET json = excluded.json").run(watch.id, JSON.stringify(watch));
+    const checked: Watch = { ...watch, product: assertProduct(watch.product) };
+    this.db.prepare("INSERT INTO watches (id, json) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET json = excluded.json").run(checked.id, JSON.stringify(checked));
   }
 
   listWatches(): Watch[] {
@@ -173,10 +190,18 @@ export class Repo {
       .prepare("SELECT MAX(observed_at) AS at FROM observations WHERE site_id = ? AND watch_id = ?")
       .get(siteId, watchId) as Row | undefined;
     const lastAny = this.db.prepare("SELECT MAX(observed_at) AS at FROM observations WHERE site_id = ?").get(siteId) as Row | undefined;
+    // A dispatch that reached CALL-E (call id bound) counts as a call even before, or without, an observation.
+    const rang = this.db
+      .prepare("SELECT MAX(created_at) AS at, MAX(CASE WHEN watch_id = ? THEN created_at END) AS at_watch FROM dispatches WHERE call_id IS NOT NULL AND instr(site_ids, ?) > 0")
+      .get(watchId, `"${siteId}"`) as Row | undefined;
+    const latest = (...values: Array<unknown>): Date | null => {
+      const dates = values.filter((v): v is string => typeof v === "string" && v.length > 0).map((v) => new Date(v));
+      return dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null;
+    };
     const wrongAny = this.db.prepare("SELECT COUNT(*) AS n FROM site_watch WHERE site_id = ? AND wrong_number = 1").get(siteId) as Row | undefined;
     return {
-      lastAskedForWatch: lastForWatch?.at ? new Date(String(lastForWatch.at)) : null,
-      lastCalledAny: lastAny?.at ? new Date(String(lastAny.at)) : null,
+      lastAskedForWatch: latest(lastForWatch?.at, rang?.at_watch),
+      lastCalledAny: latest(lastAny?.at, rang?.at),
       carries: sw ? Number(sw.carries) === 1 : true,
       refusedAt: sw?.refused_at ? new Date(String(sw.refused_at)) : null,
       wrongNumber: Number(wrongAny?.n ?? 0) > 0
@@ -399,22 +424,6 @@ export class Repo {
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
     const limit = filter.limit ? `LIMIT ${Math.max(1, Math.floor(filter.limit))}` : "";
     return (this.db.prepare(`SELECT * FROM observations ${where} ORDER BY observed_at DESC ${limit}`).all(...(params as string[])) as Row[]).map(rowToObservation);
-  }
-
-  latestUsableForSite(siteId: string, watchId: string | null, productKey: string | null): Observation | null {
-    const rows = this.db
-      .prepare("SELECT * FROM observations WHERE site_id = ? AND usable = 1 ORDER BY observed_at DESC LIMIT 20")
-      .all(siteId) as Row[];
-    for (const row of rows) {
-      const obs = rowToObservation(row);
-      if (watchId && obs.watchId === watchId) {
-        return obs;
-      }
-      if (!watchId && productKey) {
-        return obs;
-      }
-    }
-    return null;
   }
 
   saveTranscript(dispatchId: string, recipientId: string, siteId: string, turns: unknown[]): void {

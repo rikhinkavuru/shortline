@@ -3,10 +3,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
 import type { AppContext } from "../app/context.js";
-import { planFind, runFind } from "../app/find.js";
+import { type PlanFindInput, discardFind, planFind, runFind } from "../app/find.js";
 import { reconcilePending, startPolling } from "../app/poller.js";
 import { runSweep } from "../app/sweep.js";
 import { handleWebhook } from "../app/webhook.js";
@@ -81,49 +82,77 @@ export function createApp(ctx: AppContext): Hono {
       return c.json({ error: "watch_not_found" }, 404);
     }
     const force = Boolean(body.force) && ctx.config.mode !== "live";
-    const run = runSweep(ctx, watch, { wait: true, force }).catch((error: Error) => ctx.bus.emit({ type: "notice", level: "warn", message: `sweep failed: ${error.message}` }));
+    const run = runSweep(ctx, watch, { wait: true, force }).catch((error: Error) => {
+      ctx.bus.emit({ type: "notice", level: "warn", message: `sweep failed: ${error.message}` });
+      return null;
+    });
     if (instant(ctx)) {
-      await run;
+      const summary = await run;
+      return c.json({ started: true, summary: summary ? { planned: summary.planned, dispatchedNow: summary.dispatchedNow, waitingForWindow: summary.waitingForWindow, inFlight: summary.inFlight, needsHuman: summary.needsHuman, alreadyDispatched: summary.alreadyDispatched } : null });
     }
-    return c.json({ started: true });
+    return c.json({ started: true, summary: null });
+  });
+
+  const planInput = (body: Record<string, unknown>): PlanFindInput => ({
+    ...(typeof body.watchId === "string" ? { watchId: body.watchId } : {}),
+    region: String(body.region ?? ""),
+    ...(typeof body.need === "number" ? { need: body.need } : {}),
+    ...(typeof body.waveSize === "number" ? { waveSize: body.waveSize } : {}),
+    ...(typeof body.maxWaves === "number" ? { maxWaves: body.maxWaves } : {}),
+    askHold: Boolean(body.askHold),
+    // The dashboard checkbox is masked to false in live mode; the CLI and MCP surfaces throw instead.
+    ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live",
+    ...(body.near && typeof body.near === "object" ? { near: body.near as { lat: number; lng: number } } : {}),
+    ...(Array.isArray(body.onlySiteIds) && body.onlySiteIds.length > 0 ? { onlySiteIds: (body.onlySiteIds as unknown[]).filter((v): v is string => typeof v === "string").slice(0, 20) } : {})
   });
 
   app.post("/api/find/plan", async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
     try {
-      const preview = planFind(ctx, {
-        ...(typeof body.watchId === "string" ? { watchId: body.watchId } : {}),
-        region: String(body.region ?? ""),
-        ...(typeof body.need === "number" ? { need: body.need } : {}),
-        ...(typeof body.waveSize === "number" ? { waveSize: body.waveSize } : {}),
-        ...(typeof body.maxWaves === "number" ? { maxWaves: body.maxWaves } : {}),
-        askHold: Boolean(body.askHold),
-        ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live",
-        ...(body.near && typeof body.near === "object" ? { near: body.near as { lat: number; lng: number } } : {}),
-        ...(Array.isArray(body.onlySiteIds) && body.onlySiteIds.length > 0 ? { onlySiteIds: (body.onlySiteIds as unknown[]).filter((v): v is string => typeof v === "string").slice(0, 20) } : {})
-      });
-      return c.json(maskDeep(preview));
+      return c.json(maskDeep(planFind(ctx, planInput(body))));
     } catch (error) {
       return c.json({ error: error instanceof Error ? error.message : String(error) }, 400);
     }
   });
 
-  app.post("/api/find/:id/run", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as { confirm?: boolean; ignoreWindow?: boolean };
-    if (body.confirm !== true) {
-      return c.json({ error: "confirm_required" }, 400);
-    }
+  app.post("/api/find/:id/discard", (c) => {
     const id = c.req.param("id");
     if (!ctx.repo.getFind(id)) {
       return c.json({ error: "find_not_found" }, 404);
     }
-    const run = runFind(ctx, id, { confirm: true, ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live" }).catch((error: Error) =>
-      ctx.bus.emit({ type: "notice", level: "warn", message: `find ${id} failed: ${error.message}` })
-    );
-    if (instant(ctx)) {
-      await run;
+    return c.json({ ok: true, request: discardFind(ctx, id) });
+  });
+
+  app.post("/api/find/:id/run", async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown> & { confirm?: boolean; ignoreWindow?: boolean; plan?: Record<string, unknown> };
+    if (body.confirm !== true) {
+      return c.json({ error: "confirm_required" }, 400);
     }
-    return c.json({ started: true });
+    let id = c.req.param("id");
+    let replanned = false;
+    if (!ctx.repo.getFind(id)) {
+      // A hosted demo may answer plan and run from different instances. When the
+      // client sends the inputs it confirmed, re-plan them here; the user still
+      // approved exactly these inputs, and the plan is deterministic.
+      if (!body.plan || typeof body.plan !== "object") {
+        return c.json({ error: "find_not_found" }, 404);
+      }
+      try {
+        id = planFind(ctx, planInput(body.plan)).request.id;
+        replanned = true;
+      } catch (error) {
+        return c.json({ error: error instanceof Error ? error.message : String(error) }, 400);
+      }
+    }
+    const run = runFind(ctx, id, { confirm: true, ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live" }).catch((error: Error) => {
+      ctx.bus.emit({ type: "notice", level: "warn", message: `find ${id} failed: ${error.message}` });
+      return null;
+    });
+    if (instant(ctx)) {
+      const result = await run;
+      return c.json({ started: true, findRequestId: id, replanned, status: result?.status ?? null });
+    }
+    return c.json({ started: true, findRequestId: id, replanned, status: null });
   });
 
   app.get("/api/transcript", (c) => {
@@ -139,14 +168,17 @@ export function createApp(ctx: AppContext): Hono {
     if (!ctx.repo.getSite(id)) {
       return c.json({ error: "site_not_found" }, 404);
     }
-    ctx.repo.setOptOut(id, body.optOut !== false, body.reason ?? "operator");
+    const result = ctx.repo.setOptOut(id, body.optOut !== false, body.reason ?? "operator");
+    if (!result.ok) {
+      return c.json({ error: result.error, reason: result.reason }, 409);
+    }
     ctx.bus.emit({ type: "notice", level: "info", message: `${id} ${body.optOut !== false ? "opted out" : "opted back in"}` });
     return c.json({ ok: true });
   });
 
   app.post("/api/reconcile", async (c) => c.json(await reconcilePending(ctx)));
 
-  app.post("/webhooks/calle", async (c) => {
+  app.post("/webhooks/calle", bodyLimit({ maxSize: 2 * 1024 * 1024 }), async (c) => {
     const raw = await c.req.text();
     const outcome = handleWebhook(ctx, raw, c.req.header("CALL-E-Event-Id") ?? null);
     return c.json(outcome.body, outcome.status as 200 | 400);

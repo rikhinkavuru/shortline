@@ -46,6 +46,7 @@ interface Combined {
   low: number | null;
   high: number | null;
   coverage: number;
+  nEff: number | null;
 }
 
 /**
@@ -53,6 +54,14 @@ interface Combined {
  *
  *   p̂  = Σ W_h p̂_h            W_h = N_h / N over covered strata
  *   SE² = Σ W_h² (1 − n_h/N_h) p̂_h(1 − p̂_h) / (n_h − 1)
+ *
+ * The interval is not the Wald band p̂ ± 1.96·SE, which collapses to zero
+ * width whenever every stratum is unanimous (a common event at n_h = 3).
+ * Instead the design variance is turned into an effective sample size,
+ * n_eff = p̂(1 − p̂) / SE², capped at the SRS-with-FPC size n / (1 − n/N),
+ * and a Wilson interval is taken on (p̂·n_eff, n_eff). When SE² is zero the
+ * effective size is the raw usable count, so eighteen unanimous answers give
+ * the Wilson interval of 0/18 rather than a point.
  *
  * Falls back to a pooled Wilson interval when any covered stratum has fewer
  * than two usable observations, because the per-stratum variance is then
@@ -62,7 +71,7 @@ export function combineStrata(strata: StratumCounts[]): Combined {
   const covered = strata.filter((s) => s.usable > 0 && s.frameSize > 0);
   const frameTotal = strata.reduce((acc, s) => acc + Math.max(0, s.frameSize), 0);
   if (covered.length === 0 || frameTotal === 0) {
-    return { method: "stratified", pHat: null, low: null, high: null, coverage: 0 };
+    return { method: "stratified", pHat: null, low: null, high: null, coverage: 0, nEff: null };
   }
   const coveredFrame = covered.reduce((acc, s) => acc + s.frameSize, 0);
   const coverage = coveredFrame / frameTotal;
@@ -71,7 +80,7 @@ export function combineStrata(strata: StratumCounts[]): Combined {
     const x = covered.reduce((acc, s) => acc + s.available, 0);
     const n = covered.reduce((acc, s) => acc + s.usable, 0);
     const w = wilson(x, n);
-    return { method: "pooled_wilson", pHat: w.p, low: w.low, high: w.high, coverage };
+    return { method: "pooled_wilson", pHat: w.p, low: w.low, high: w.high, coverage, nEff: n };
   }
   let pHat = 0;
   let variance = 0;
@@ -82,13 +91,21 @@ export function combineStrata(strata: StratumCounts[]): Combined {
     pHat += weight * ph;
     variance += weight * weight * fpc * ((ph * (1 - ph)) / (s.usable - 1));
   }
-  const se = Math.sqrt(variance);
+  const nTotal = covered.reduce((acc, s) => acc + s.usable, 0);
+  let nEff = nTotal;
+  if (variance > 0 && pHat > 0 && pHat < 1) {
+    const fromDesign = (pHat * (1 - pHat)) / variance;
+    const srsCap = nTotal < coveredFrame ? nTotal / (1 - nTotal / coveredFrame) : Number.POSITIVE_INFINITY;
+    nEff = Math.max(1, Math.min(fromDesign, srsCap));
+  }
+  const w = wilson(pHat * nEff, nEff);
   return {
     method: "stratified",
     pHat,
-    low: Math.max(0, pHat - Z95 * se),
-    high: Math.min(1, pHat + Z95 * se),
-    coverage
+    low: w.low,
+    high: w.high,
+    coverage,
+    nEff: Math.round(nEff * 10) / 10
   };
 }
 
@@ -141,7 +158,7 @@ export function buildEstimate(input: EstimateInput): Estimate {
   const combined = combineStrata(input.strata);
   const planned = input.strata.reduce((acc, s) => acc + s.planned, 0);
   const usable = input.strata.reduce((acc, s) => acc + s.usable, 0);
-  const overall = { pHat: combined.pHat, low: combined.low, high: combined.high };
+  const overall = { pHat: combined.pHat, low: combined.low, high: combined.high, nEff: combined.nEff };
   return {
     watchId: input.watchId,
     isoWeek: input.isoWeek,

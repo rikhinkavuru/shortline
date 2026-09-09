@@ -2,9 +2,9 @@
 
 Adds **Shortline** under `apps/typescript/shortline/` and the companion skill `skills/shortline-find/`.
 
-Shortline treats a CALL-E call as a measurement. Every week it draws a fresh random subsample of pharmacies per region and per kind, asks each one whether it can dispense a named product today, turns the structured result into an observation only after evidence checks, and publishes a street-level availability index with a 95% interval per stratum and region. When someone needs the product now, sourcing waves reuse the surveillance data, dial candidates three at a time, and stop the moment the need is met. Every confirmation carries the pharmacy's own words.
+Shortline treats a CALL-E call as a measurement. Every week it draws a fresh random subsample of pharmacies per region and per kind, asks each one whether it can dispense a named product today, turns the structured result into an observation only after evidence checks, and publishes a street-level availability index with a 95% interval per stratum and region. When someone needs the product now, sourcing waves reuse fresh sightings from the sweeps, dial candidates three at a time, and stop the moment the need is met; their answers update the sightings cache and the frame, never the index. Every confirmation carries the pharmacy's own words.
 
-Motivation: active US drug shortages reached 227 in Q2 2026 (ASHP / University of Utah). National lists are binary and national; pharmacies have no inventory API; the phone is the API. Hospital pharmacy teams spend on the order of 20 staff-hours a week on shortages, much of it phoning around.
+Motivation: active US drug shortages reached 227 in Q2 2026 ([ASHP / University of Utah](https://www.ashp.org/drug-shortages/shortage-resources/drug-shortages-statistics)). National lists are binary and national; pharmacies have no inventory API; the phone is the API. ASHP's shortage surveys describe pharmacy teams spending on the order of 20 staff-hours a week on shortages, much of it phoning around.
 
 ## What it uses from CALL-E
 
@@ -14,7 +14,7 @@ Motivation: active US drug shortages reached 227 in Q2 2026 (ASHP / University o
 
 ## Evidence gates (why a schema-valid result is not yet an observation)
 
-An answer enters the estimator only if a person in the pharmacy answered, the assistant actually named the product in its own turns, an evidence quote exists, and that quote is attributable to the callee's turns. Voicemail, menus, refusals, wrong numbers, null results, and unattributed quotes are stored and shown with their reason and reported as nonresponse, never as "no". The dry-run scenarios include the failure cases on purpose so the gates are visible in every demo run.
+An answer enters the estimator only if the recipient completed, a person in the pharmacy answered, the assistant actually named the product in its own turns, an evidence quote exists, and that quote appears as a contiguous phrase in one of the callee's turns. Voicemail, menus, refusals, wrong numbers, null results, and unattributed quotes are stored and shown with their reason and reported as nonresponse, never as "no". The dry-run scenarios include the failure cases on purpose so the gates are visible in every demo run.
 
 ## Type
 
@@ -29,11 +29,11 @@ An answer enters the estimator only if a person in the pharmacy answered, the as
 
 ## Side effects
 
-Calls are placed only in live mode (`SHORTLINE_MODE=live` + `CALLE_API_KEY` + `SHORTLINE_LIVE_ACK` set to an exact phrase) and only by `sweep`, `find --yes`, `find-run`, the dashboard's confirm buttons, or the MCP tool `shortline_run_find` with `confirm: true`. Every call discloses that it is automated. The Calls API cannot recall an accepted call, so exposure is bounded: sweeps dispatch in batches of at most 6 recipients and sourcing dispatches one wave at a time. No recurring jobs are created; recurrence is the host scheduler's job and every invocation is safe to repeat.
+Calls are placed only in live mode (`SHORTLINE_MODE=live` + `CALLE_API_KEY` + `SHORTLINE_LIVE_ACK` set to an exact phrase + `SHORTLINE_CALLER_NAME` to disclose) and only by `sweep`, `find --yes`, `find-run`, the dashboard's confirm buttons, or the MCP tool `shortline_run_find` with `confirm: true`. Every call discloses that it is automated. The Calls API cannot recall an accepted call, so exposure is bounded: sweeps dispatch in batches of at most 6 recipients and sourcing dispatches one wave at a time. No recurring jobs are created; recurrence is the host scheduler's job and every invocation is safe to repeat.
 
 ## Courtesy
 
-One ask per site per product per cooldown (14 days), one Shortline call per site per 5 days for any reason, local calling windows in the site's own IANA timezone (never inferred), refusals rest a site for 90 days, two "not reached" outcomes drop a number, and "don't call again" opts a site out permanently with an audit row.
+One ask per site per product in the same or the previous ISO week (14 days on a weekly cadence, never fewer than 8), one Shortline call per site per 5 days for any reason, never a second call while one is in flight, local calling windows in the site's own IANA timezone (never inferred), refusals rest a site for 90 days, two "not reached" outcomes drop a number, and "don't call again" opts a site out permanently with an audit row that the dashboard cannot undo. Operator test lines (`--test-line`) are exempt from windows and cooldowns and never enter a frame or an estimate.
 
 ## Cancellation
 
@@ -48,7 +48,8 @@ Stopping the process stops further dispatches. Accepted batches complete on CALL
 ```bash
 cd apps/typescript/shortline
 npm install
-npm test        # 63 tests: estimator, sampling, classification, waves, ledger, fake provider, SDK adapter against a fake HTTP server with webhook delivery, sweep/find workflows, crash-safety replay, binding mismatch, live-mode guards, webhook receiver
+npm test        # estimator, sampling, classification, waves, ledger, fake provider, SDK adapter against a fake HTTP server with webhook delivery, an API-shaped snapshot through the SDK parser, sweep/find workflows, crash-safety replay, rate-limit replay, in-flight guard, binding mismatch, live-mode guards, callee opt-out protection, reproducible demo history, webhook receiver
+npm run eval    # interval coverage and false-shortage rate over simulated weeks
 npm run demo    # dashboard with eight simulated weeks
 ```
 

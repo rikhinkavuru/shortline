@@ -16,7 +16,7 @@ export interface RankedCandidate extends FindCandidate {
 const FRESH_HOURS = 72;
 
 /**
- * Rank candidates for a sourcing wave. Fresh surveillance observations feed
+ * Rank candidates for a sourcing wave. Fresh monitoring observations feed
  * the ranking: a site seen in stock this week goes first, a site seen out of
  * stock this week goes last, and everything else is ordered by distance.
  */
@@ -54,9 +54,14 @@ export interface WaveDecision {
 /**
  * Decide the next wave. Stops the moment the need is met, never re-dials a
  * site inside the same request, and refuses to exceed `maxWaves`.
+ *
+ * `wavesDispatched` is the number of dispatch rows the ledger already holds
+ * for this request. It is the wave index, and it feeds the idempotency key,
+ * so it must come from the ledger rather than be inferred from site counts
+ * (a short final wave would otherwise repeat an index and collide).
  */
-export function nextWave(request: FindRequest, ranked: RankedCandidate[]): WaveDecision {
-  const waveIndex = request.usedSiteIds.length === 0 ? 0 : Math.ceil(request.usedSiteIds.length / request.waveSize);
+export function nextWave(request: FindRequest, ranked: RankedCandidate[], wavesDispatched: number): WaveDecision {
+  const waveIndex = Math.max(0, Math.floor(wavesDispatched));
   if (request.confirmedSiteIds.length >= request.need) {
     return { action: "met", siteIds: [], waveIndex };
   }

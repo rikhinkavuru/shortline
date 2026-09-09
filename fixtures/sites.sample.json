@@ -21,7 +21,7 @@
   },
   {
     "id": "sf-chn-3",
-    "name": "Cardinal Rx #103",
+    "name": "Crescent Rx #103",
     "kind": "chain",
     "phone": "+14155550103",
     "region": "US-CA-SF",
@@ -32,7 +32,7 @@
   },
   {
     "id": "sf-chn-4",
-    "name": "Redwood Health Mart #104",
+    "name": "Redwood Wellness Drug #104",
     "kind": "chain",
     "phone": "+14155550104",
     "region": "US-CA-SF",
@@ -144,7 +144,7 @@
   },
   {
     "id": "eb-chn-3",
-    "name": "Cardinal Rx #103",
+    "name": "Crescent Rx #103",
     "kind": "chain",
     "phone": "+15105550115",
     "region": "US-CA-EB",
@@ -154,7 +154,7 @@
   },
   {
     "id": "eb-chn-4",
-    "name": "Redwood Health Mart #104",
+    "name": "Redwood Wellness Drug #104",
     "kind": "chain",
     "phone": "+15105550116",
     "region": "US-CA-EB",
@@ -265,7 +265,7 @@
   },
   {
     "id": "sj-chn-3",
-    "name": "Cardinal Rx #103",
+    "name": "Crescent Rx #103",
     "kind": "chain",
     "phone": "+14085550127",
     "region": "US-CA-SJ",
@@ -275,7 +275,7 @@
   },
   {
     "id": "sj-chn-4",
-    "name": "Redwood Health Mart #104",
+    "name": "Redwood Wellness Drug #104",
     "kind": "chain",
     "phone": "+14085550128",
     "region": "US-CA-SJ",

@@ -93,11 +93,20 @@ export class ProviderError extends Error {
   }
 }
 
+export interface EventPage {
+  events: ProviderEvent[];
+  /** Opaque cursor to pass back as `after` to read only newer events. */
+  nextCursor: string | null;
+}
+
 export interface CallProvider {
   readonly mode: "fake" | "live";
   create(input: CreateBatchInput, idempotencyKey: string): Promise<ProviderCall>;
   get(callId: string): Promise<ProviderCall>;
-  listEvents(callId: string): Promise<ProviderEvent[]>;
+  /** All developer events for a call, or only those after `after` when a cursor is given. */
+  listEvents(callId: string, after?: string): Promise<ProviderEvent[]>;
+  /** One page of events after the cursor, with the cursor to resume from. */
+  listEventsAfter(callId: string, after: string | null): Promise<EventPage>;
 }
 
 export function isTerminal(status: string): boolean {

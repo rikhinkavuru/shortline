@@ -1,20 +1,20 @@
-# Live runbook: first real call, then the video
+# Live runbook: one real call to your own phone
 
-Everything below places real CALL-E calls and spends credit. Do it in this order.
+Everything below places real CALL-E calls and spends credit. Run the commands from the project directory after `npm install`; `npx shortline` and `node bin/shortline.mjs` are equivalent.
 
 ## 0. One-time setup
 
 ```bash
-cd ~/call-e
 npm install
-npm run demo -- --no-serve          # seeds fixtures and 8 simulated weeks (dry-run, no calls)
+npx shortline demo --no-serve       # seeds fixtures and 8 simulated weeks (dry-run, no calls)
 
 export SHORTLINE_MODE=live
 export CALLE_API_KEY=iams_live_...  # dashboard.heycall-e.com/account/api-keys
 export SHORTLINE_LIVE_ACK=I_UNDERSTAND_REAL_CALLS_COST_MONEY_AND_CANNOT_BE_RECALLED
+export SHORTLINE_CALLER_NAME="Shortline"
 export SHORTLINE_AUTH_TOKEN=$(openssl rand -hex 16)
 
-npm run dev -- auth-check           # read-only; expects {"ok": true, "status": 200}
+npx shortline auth-check            # read-only, through the SDK; expects {"ok": true, "status": 200, "sdk": "@call-e/calle"}
 ```
 
 ## 1. Register your own phone as a test line
@@ -22,48 +22,46 @@ npm run dev -- auth-check           # read-only; expects {"ok": true, "status": 
 A test line is exempt from calling windows and cooldowns, may be targeted by a sourcing request, and is never sampled by a sweep or counted in the index.
 
 ```bash
-npm run dev -- site add --id demo-me --name "Corner Pharmacy" --kind independent \
+npx shortline site add --id demo-me --name "Corner Pharmacy" --kind independent \
   --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles --test-line
 ```
 
 ## 2. Smoke test: exactly one real call, to you
 
 ```bash
-npm run dev -- find --watch amoxicillin-susp --region US-CA-SF --only-site demo-me --need 1 --wave 1 --max-waves 1
+npx shortline find --watch amoxicillin-susp --region US-CA-SF --only-site demo-me --need 1 --wave 1 --max-waves 1
 ```
 
-That prints the plan and places nothing. Re-run with `--yes` to dial. Your phone rings within about a minute. Answer as pharmacy staff:
+That prints the plan and places nothing. Re-run with `--yes` to dial. Your phone rings within about a minute. Answer as pharmacy staff, with a fictional name:
 
-> "Pharmacy, this is …" → let the assistant disclose itself and ask → "Let me check… yes, we have that, but only a couple of bottles. Next delivery is Thursday."
+> "Pharmacy, this is Dana." → let the assistant disclose itself and ask → "Let me check… yes, we have that, but only a couple of bottles. Next delivery is Thursday."
 
-Expected output: `status: met`, one confirmed source with `outcome: limited`, an `evidenceQuote` in your words, `restockExpectation` mentioning Thursday. If the quote is missing or `usable` is false, read `attempts[].usableReason` — that is the evidence gate doing its job; try once more speaking clearly.
+Expected output: `status: "met"`, one confirmed source with `outcome: "limited"`, an `evidenceQuote` in your words, `restockExpectation` mentioning Thursday. If `usable` is false, read `attempts[].usableReason`: that is the evidence gate doing its job (for example `evidence_unattributed` when the extracted quote is not a phrase you actually said); speak a clear full sentence and try once more.
 
-Cost: one recipient. Twenty free calls cover the smoke test, a few retakes, and the recording.
+Cost: one recipient per attempt.
 
-## 3. Optional: one real chain pharmacy through its phone menu
+## 3. Export the evidence the same day
 
-Pick one store with a public phone menu. Add it without `--test-line` so the calling window applies (10:00–17:00 local, Monday–Saturday):
+Transcripts are purged after 14 days, so export immediately. The dispatch id is printed by the find command (`dsp_...`) and shown in the dashboard feed.
 
 ```bash
-npm run dev -- site add --id chain-1 --name "A chain pharmacy" --kind chain \
-  --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles
-npm run dev -- find --watch amoxicillin-susp --region US-CA-SF --only-site chain-1 --need 1 --wave 1 --max-waves 1 --yes
+npx shortline evidence --dispatch dsp_...
 ```
 
-This is a normal customer question, disclosed as automated. Keep it to one call and refer to it only as "a chain pharmacy" on screen.
+This writes `docs/evidence/<date>-<dispatch>/{call.json,events.json,observations.json,README.md}`: the terminal `GET /v1/calls/{id}` snapshot in API shape with your number replaced by a fiction-block number, the developer events, and the derived observation. Commit the folder and add one line to the README's Technical implementation row: `Verified against CALL-E on <date>: call_<id>, artifacts in docs/evidence/`. Do three to five calls so one shows a gate firing on purpose (say "we can't give out stock information over the phone" for `refused`, or hang up before the product is named for `product_never_asked`).
 
 ## 4. Record
 
 ```bash
-SHORTLINE_FAKE_PACE_MS=0 npm run dev -- serve      # live mode; open http://127.0.0.1:8787/?token=$SHORTLINE_AUTH_TOKEN
+npx shortline serve      # live mode; open http://127.0.0.1:8787/?token=$SHORTLINE_AUTH_TOKEN
 ```
 
-Follow `docs/demo.md`. In the **Find it now** panel choose region `US-CA-SF`, need 1, wave 1, then **Plan** → the plan lists `demo-me` (and `chain-1` if added) → **Place real call**. Keep the phone in frame. Click **transcript** on the observation once it lands.
+Follow `docs/demo.md`. In **Find it now** choose region `US-CA-SF`, sources needed 1, wave size 1, type `demo-me` under *Only these sites*, then **Plan** → the plan lists `demo-me` → **Place 1 real call**. Keep the phone in frame. Click **transcript** on the observation once it lands. The feed labels each CALL-E developer event and shows the real call id.
 
 If you would rather drive it from the CLI while recording, run the step 2 command with `--yes` in a visible terminal next to the dashboard; the dashboard updates either way.
 
 ## 5. After recording
 
-- `npm run dev -- reconcile` once, so any straggling dispatch is verified.
-- Unset the three live variables before doing anything else.
+- `npx shortline reconcile` once, so any straggling dispatch is verified.
+- Unset the live variables before doing anything else.
 - The database keeps the real observations under `demo-me`; they never enter the index because the site is a test line.

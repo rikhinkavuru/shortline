@@ -93,3 +93,47 @@ describe("LiveCalleProvider against the fake HTTP server", () => {
     await expect(live.create(input(["+14155550101"]), "k")).rejects.toMatchObject({ code: "transport_ambiguous", callStarted: "unknown", retrySafe: false });
   });
 });
+
+describe("API-shaped terminal snapshot through the SDK parser", () => {
+  it("parses a snake_case call task exactly as CALL-E returns it and classifies each recipient", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { classifyRecipient } = await import("../src/domain/classify.js");
+    const raw = readFileSync("test/fixtures/calle-call-completed.json", "utf8");
+    const live = new LiveCalleProvider({
+      apiKey: "iams_live_test",
+      baseUrl: "https://api.heycall-e.com",
+      fetch: async (request: Request) => {
+        expect(request.headers.get("authorization")).toBe("Bearer iams_live_test");
+        expect(request.url).toBe("https://api.heycall-e.com/v1/calls/call_01j9x2example");
+        return new Response(raw, { status: 200, headers: { "content-type": "application/json" } });
+      }
+    });
+    const call = await live.get("call_01j9x2example");
+    expect(call.status).toBe("completed");
+    expect(call.metadata.dispatch_id).toBe("dsp_fixture");
+    expect(call.recipients[0]?.attempts[0]?.transcriptTurns).toHaveLength(7);
+    expect(call.recipients[1]?.status).toBe("skipped");
+    const product = { name: "amoxicillin", strength: "400 mg/5 mL", form: "oral suspension" };
+    const snap = (i: number) => {
+      const r = call.recipients[i]!;
+      const attempt = r.attempts[r.attempts.length - 1];
+      return {
+        recipientId: r.id,
+        phone: r.phones[0] ?? "",
+        status: r.status,
+        structuredResult: r.structuredResult,
+        transcript: (attempt?.transcriptTurns ?? []).map((t) => ({ speaker: t.speaker, text: t.text })),
+        attemptFailureCode: attempt?.failureCode ?? null,
+        attemptStarted: r.attempts.some((a) => a.startedAt !== null)
+      };
+    };
+    const first = classifyRecipient(product, snap(0));
+    expect(first.outcome).toBe("limited");
+    expect(first.usable).toBe(true);
+    expect(first.usableReason).toBe("verified");
+    expect(first.restockExpectation).toContain("Thursday");
+    const second = classifyRecipient(product, snap(1));
+    expect(second.outcome).toBe("unreachable");
+    expect(second.usableReason).toBe("not_dialled");
+  });
+});

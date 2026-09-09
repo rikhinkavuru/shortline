@@ -21,6 +21,7 @@
       <span>Watching</span>
       <select id="watch-select" aria-label="Watched product"></select>
     </label>
+    <label class="check topbar-check" id="find-ignore-wrap" title="Dry-run only: pretend it is business hours at every site"><input id="find-ignore" type="checkbox"> Ignore calling hours</label>
     <span id="mode-badge" class="badge">…</span>
     <span id="live-dot" class="live-dot" title="live updates"></span>
   </div>
@@ -35,10 +36,12 @@
     <p class="panel-sub" id="index-sub">Share of pharmacies with the product in stock, estimated from a rotating stratified sample. Band is a 95% interval.</p>
     <div id="chart" class="chart" role="img" aria-label="Weekly availability estimate with confidence band"></div>
     <div class="index-stats" id="index-stats"></div>
+    <div class="table-scroll">
     <table class="strata" id="strata">
-      <thead><tr><th>Stratum</th><th>frame</th><th>asked</th><th>usable</th><th>in stock</th><th>estimate</th></tr></thead>
+      <thead><tr><th>Stratum</th><th>frame</th><th>asked</th><th>usable</th><th>available</th><th>estimate</th></tr></thead>
       <tbody></tbody>
     </table>
+    </div>
   </section>
 
   <section class="panel panel-sweep" aria-labelledby="sweep-title">
@@ -47,6 +50,7 @@
       <button id="run-sweep" class="btn">Run sweep now</button>
     </div>
     <div id="sweep-summary" class="sweep-summary"></div>
+    <p id="sweep-hint" class="panel-sub" hidden></p>
     <ol id="feed" class="feed" aria-live="polite"></ol>
   </section>
 
@@ -69,7 +73,6 @@
         <input id="find-only" type="text" placeholder="demo-me">
       </label>
       <label class="check"><input id="find-hold" type="checkbox"> Ask to hold one fill for pickup today</label>
-      <label class="check" id="find-ignore-wrap"><input id="find-ignore" type="checkbox"> Ignore calling hours (dry-run only)</label>
       <button class="btn" type="submit">Plan</button>
     </form>
     <div id="find-preview" class="find-preview" hidden></div>
@@ -83,7 +86,7 @@
     </div>
     <p class="panel-sub">Numbers are masked everywhere. A site is asked about a product at most once per cooldown; anyone who says "don't call" is opted out for good.</p>
     <table class="sites" id="sites">
-      <thead><tr><th>Site</th><th>Stratum</th><th>Number</th><th>Last</th><th>30d</th><th></th></tr></thead>
+      <thead><tr><th>Site</th><th>Stratum</th><th>Number</th><th>Last</th><th title="Shortline calls to this site in the last 30 days">Calls 30d</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
   </section>

@@ -1,0 +1,67 @@
+{
+  "id": "call_01j9x2example",
+  "object": "call_task",
+  "status": "completed",
+  "task": "You are calling a pharmacy. Identify yourself immediately as an automated assistant calling for Shortline ...",
+  "recipients": [
+    {
+      "id": "rcp_01",
+      "phones": ["+14155550190"],
+      "region": "US",
+      "locale": "en-US",
+      "status": "completed",
+      "structured_result": {
+        "availability": "limited",
+        "restock_expectation": "Thursday's delivery",
+        "quantity_note": "a couple of bottles left",
+        "answered_by": "human",
+        "reached_pharmacy": "yes",
+        "do_not_call_request": "no",
+        "evidence_quote": "we only have a couple of bottles left"
+      },
+      "summary": "Pharmacy staff said the product is in stock but limited; next delivery Thursday.",
+      "attempts": [
+        {
+          "id": "att_01",
+          "phone": "+14155550190",
+          "status": "completed",
+          "started_at": "2026-09-09T17:02:11Z",
+          "completed_at": "2026-09-09T17:03:04Z",
+          "summary": null,
+          "transcript_turns": [
+            { "offset_seconds": 0, "speaker": "user", "text": "Pharmacy, this is Dana." },
+            { "offset_seconds": 2, "speaker": "bot", "text": "Hi, this is an automated assistant calling for Shortline, a project that tracks medication availability. This will take under a minute and may be recorded." },
+            { "offset_seconds": 10, "speaker": "bot", "text": "Do you currently have amoxicillin 400 mg/5 mL oral suspension in stock and able to dispense today?" },
+            { "offset_seconds": 16, "speaker": "user", "text": "Let me check. We do, but we only have a couple of bottles left." },
+            { "offset_seconds": 21, "speaker": "bot", "text": "Understood. When do you expect the next delivery?" },
+            { "offset_seconds": 24, "speaker": "user", "text": "Should be on Thursday's delivery." },
+            { "offset_seconds": 27, "speaker": "bot", "text": "Thank you, that's all I needed. Have a good day." }
+          ],
+          "provider_call_id": "prov_9f1c",
+          "failure_code": null,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "id": "rcp_02",
+      "phones": ["+14155550191"],
+      "region": "US",
+      "locale": "en-US",
+      "status": "skipped",
+      "structured_result": null,
+      "summary": null,
+      "attempts": []
+    }
+  ],
+  "structured_result": { "pharmacies_reached": 1 },
+  "summary": "One of two recipients reached pharmacy staff.",
+  "task_completed": true,
+  "completion_confidence": { "score": 0.9, "label": "high" },
+  "evidence": ["The pharmacy confirmed limited stock and a Thursday delivery."],
+  "metadata": { "dispatch_id": "dsp_fixture", "kind": "find", "watch_id": "amoxicillin-susp", "find_request_id": "fnd_fixture", "product_label": "amoxicillin 400 mg/5 mL oral suspension", "schema_version": "shortline.recipient.v1", "app": "shortline" },
+  "failure_code": null,
+  "failure_message": null,
+  "created_at": "2026-09-09T17:01:50Z",
+  "completed_at": "2026-09-09T17:03:40Z"
+}

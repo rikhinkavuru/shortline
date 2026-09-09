@@ -6,6 +6,7 @@ import type { Dispatch, Site, Sweep, Watch } from "../domain/types.js";
 import type { AppContext } from "./context.js";
 import { submitDispatch } from "./dispatch.js";
 import { recomputeEstimate } from "./estimate.js";
+import { sitesInFlight } from "./find.js";
 import { settle } from "./reconcile.js";
 
 export interface SweepRunOptions {
@@ -22,6 +23,10 @@ export interface SweepRunSummary {
   alreadyDispatched: number;
   dispatchedNow: number;
   waitingForWindow: number;
+  /** Sites held back because another Shortline call to them is in flight. */
+  inFlight: number;
+  /** Batches that stopped in needs_human this week. */
+  needsHuman: number;
   dispatchIds: string[];
   undersampled: string[];
   excluded: Array<{ siteId: string; reason: string }>;
@@ -74,12 +79,20 @@ export async function runSweep(ctx: AppContext, watch: Watch, options: SweepRunO
   const isoWeek = options.isoWeek ?? isoWeekOf(ctx.now());
   const { sweep, excluded } = loadOrPlanSweep(ctx, watch, isoWeek);
   const prior = ctx.repo.listDispatches({ sweepId: sweep.id });
-  const already = new Set(prior.filter((d) => d.state !== "needs_human").flatMap((d) => d.siteIds));
+  // A batch that stopped in needs_human but already rang (has a call id) is consumed for the week:
+  // its sites must not be dialled again under a fresh key.
+  const already = new Set(prior.filter((d) => d.state !== "needs_human" || d.callId !== null).flatMap((d) => d.siteIds));
+  const inFlight = sitesInFlight(ctx);
   const remaining = sweep.plannedSiteIds
     .filter((id) => !already.has(id))
     .map((id) => ctx.repo.getSite(id))
-    .filter((s): s is Site => s !== null && !s.optOut);
-  const { due, waiting } = options.force ? { due: remaining, waiting: [] } : dueNow(remaining, watch.window, ctx.now());
+    .filter((s): s is Site => s !== null && !s.optOut && !s.testLine);
+  const held = remaining.filter((s) => inFlight.has(s.id));
+  const free = remaining.filter((s) => !inFlight.has(s.id));
+  const { due, waiting } = options.force ? { due: free, waiting: [] } : dueNow(free, watch.window, ctx.now());
+  if (waiting.length > 0 && !options.force) {
+    ctx.bus.emit({ type: "sweep", sweepId: sweep.id, watchId: watch.id, isoWeek, status: "waiting", note: `${waiting.length} site(s) outside their local calling window; they will be dialled on a later run` });
+  }
   const dispatchIds: string[] = [];
   const retryable = prior.filter((d) => d.state === "reserved" || d.state === "submission_unknown");
   for (const d of retryable) {
@@ -126,12 +139,18 @@ export async function runSweep(ctx: AppContext, watch: Watch, options: SweepRunO
     ctx.repo.saveSweep({ ...sweep, status: "complete" });
     ctx.bus.emit({ type: "sweep", sweepId: sweep.id, watchId: watch.id, isoWeek, status: "complete", note: "all planned sites reconciled" });
   }
+  const dispatchedNow = dispatchIds
+    .map((id) => ctx.repo.getDispatch(id))
+    .filter((d): d is Dispatch => d !== null && d.state !== "reserved" && d.state !== "needs_human")
+    .reduce((acc, d) => acc + d.siteIds.length, 0);
   return {
     sweep: ctx.repo.getSweep(watch.id, isoWeek) ?? sweep,
     planned: sweep.plannedSiteIds.length,
     alreadyDispatched: already.size,
-    dispatchedNow: due.length,
+    dispatchedNow,
     waitingForWindow: waiting.length,
+    inFlight: held.length,
+    needsHuman: all.filter((d) => d.state === "needs_human").length,
     dispatchIds,
     undersampled: sweep.undersampledStrata,
     excluded

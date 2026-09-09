@@ -24,6 +24,11 @@ export function isoWeekStart(label: string): Date {
   return new Date(mondayWeek1.getTime() + (week - 1) * 7 * 86400000);
 }
 
+/** Whole ISO weeks from label `a` to label `b` (negative when `b` is earlier). */
+export function isoWeeksBetween(a: string, b: string): number {
+  return Math.round((isoWeekStart(b).getTime() - isoWeekStart(a).getTime()) / (7 * 86400000));
+}
+
 export function addIsoWeeks(label: string, delta: number): string {
   const start = isoWeekStart(label);
   return isoWeek(new Date(start.getTime() + delta * 7 * 86400000 + 3 * 86400000));

@@ -50,9 +50,12 @@ export function recomputeEstimate(ctx: AppContext, watchId: string, isoWeek: str
       }
     }
   }
+  // Only sweep observations enter the index. Sourcing calls are outcome-selected
+  // (they dial sites ranked by prior stock and stop at the first successes), so
+  // pooling them would mask exactly the shortage the index exists to detect.
   const weekObs = ctx.repo
     .listObservations({ watchId, since: start.toISOString() })
-    .filter((o) => o.observedAt < end.toISOString());
+    .filter((o) => o.source === "sweep" && o.usable && o.observedAt < end.toISOString());
   let simulated = false;
   for (const obs of latestPerSite(weekObs).values()) {
     const site = siteById.get(obs.siteId);

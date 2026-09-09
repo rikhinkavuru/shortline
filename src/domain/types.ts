@@ -184,7 +184,8 @@ export interface Estimate {
   computedAt: string;
   strata: StratumEstimate[];
   method: "stratified" | "pooled_wilson";
-  overall: { pHat: number | null; low: number | null; high: number | null };
+  /** `nEff` is the effective sample size behind the interval (equals usable count for the pooled method). */
+  overall: { pHat: number | null; low: number | null; high: number | null; nEff: number | null };
   /** Share of the frame covered by strata that produced at least one usable observation. */
   coverage: number;
   planned: number;

@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
-import { type CallProvider, type CreateBatchInput, type ProviderCall, type ProviderEvent, type ProviderRecipient, ProviderError, isTerminal } from "./provider.js";
-import { DEFAULT_MIX, SCENARIOS, pickScenario } from "./scenarios.js";
-import { hashString, mulberry32 } from "../domain/random.js";
+import { type CallProvider, type CreateBatchInput, type EventPage, type ProviderCall, type ProviderEvent, type ProviderRecipient, ProviderError, isTerminal } from "./provider.js";
+import { DEFAULT_MIX, SCENARIOS } from "./scenarios.js";
+import { hashString, mulberry32, seededShuffle } from "../domain/random.js";
 
 export interface FakeSpeed {
   queueMs: number;
@@ -30,6 +30,9 @@ interface InternalCall {
   call: ProviderCall;
   webhookUrl: string | undefined;
   timers: NodeJS.Timeout[];
+  idempotencyKey: string;
+  /** Scenario assigned per recipient id at create time (deterministic). */
+  scenarios: Map<string, string>;
 }
 
 function digest(input: unknown): string {
@@ -55,9 +58,61 @@ export class FakeCalleProvider implements CallProvider {
   private readonly options: FakeProviderOptions;
   /** Weighted scenario mix for sites without an explicit scenario. Mutable so a demo can simulate a worsening shortage. */
   mix: Array<[string, number]> = DEFAULT_MIX;
+  /** Largest-remainder carry per scenario so realised proportions track the mix across small batches. */
+  private readonly carry = new Map<string, number>();
 
   constructor(options: FakeProviderOptions = {}) {
     this.options = options;
+  }
+
+  /**
+   * Assign scenarios to the recipients of one call task: explicit per-site
+   * scenarios first, then a deterministic largest-remainder quota of the mix
+   * for the rest, shuffled with a seed derived from the idempotency key so a
+   * replayed demo produces the same history.
+   */
+  private assignScenarios(recipients: Array<{ id: string; phone: string }>, idempotencyKey: string): Map<string, string> {
+    const out = new Map<string, string>();
+    const open: Array<{ id: string; phone: string }> = [];
+    for (const r of recipients) {
+      const explicit = this.options.resolver?.(r.phone);
+      if (explicit && SCENARIOS[explicit]) {
+        out.set(r.id, explicit);
+      } else {
+        open.push(r);
+      }
+    }
+    if (open.length === 0) {
+      return out;
+    }
+    const total = this.mix.reduce((acc, [, w]) => acc + w, 0);
+    const shares = this.mix.map(([name, w]) => ({ name, exact: (open.length * w) / total + (this.carry.get(name) ?? 0) }));
+    const counts = shares.map((s) => ({ name: s.name, n: Math.floor(s.exact), rem: s.exact - Math.floor(s.exact) }));
+    let assigned = counts.reduce((acc, c) => acc + c.n, 0);
+    const byRemainder = counts.slice().sort((a, b) => b.rem - a.rem || a.name.localeCompare(b.name));
+    for (const c of byRemainder) {
+      if (assigned >= open.length) {
+        break;
+      }
+      c.n += 1;
+      assigned += 1;
+    }
+    while (assigned > open.length) {
+      const victim = counts.slice().sort((a, b) => a.rem - b.rem || a.name.localeCompare(b.name)).find((c) => c.n > 0);
+      if (!victim) {
+        break;
+      }
+      victim.n -= 1;
+      assigned -= 1;
+    }
+    for (const s of shares) {
+      const c = counts.find((x) => x.name === s.name);
+      this.carry.set(s.name, s.exact - (c?.n ?? 0));
+    }
+    const slots = counts.flatMap((c) => Array.from({ length: c.n }, () => c.name));
+    const ordered = seededShuffle(open.slice().sort((a, b) => a.phone.localeCompare(b.phone)), `${idempotencyKey}:assign`);
+    ordered.forEach((r, i) => out.set(r.id, slots[i] ?? "in_stock_human"));
+    return out;
   }
 
   private now(): Date {
@@ -77,15 +132,6 @@ export class FakeCalleProvider implements CallProvider {
       details
     });
     this.events.set(callId, list);
-  }
-
-  private scenarioFor(phone: string, callId: string): string {
-    const explicit = this.options.resolver?.(phone);
-    if (explicit && SCENARIOS[explicit]) {
-      return explicit;
-    }
-    const rng = mulberry32(hashString(`${phone}:${callId}`));
-    return pickScenario(rng(), this.mix);
   }
 
   async create(input: CreateBatchInput, idempotencyKey: string): Promise<ProviderCall> {
@@ -119,7 +165,7 @@ export class FakeCalleProvider implements CallProvider {
     const recipients: ProviderRecipient[] = input.recipients.map((r) => ({
       id: `rcp_${randomBytes(4).toString("hex")}`,
       phones: [r.phone],
-      status: "queued",
+      status: "pending",
       structuredResult: null,
       summary: null,
       attempts: []
@@ -140,7 +186,13 @@ export class FakeCalleProvider implements CallProvider {
       createdAt,
       completedAt: null
     };
-    this.calls.set(callId, { call, webhookUrl: input.webhookUrl, timers: [] });
+    this.calls.set(callId, {
+      call,
+      webhookUrl: input.webhookUrl,
+      timers: [],
+      idempotencyKey,
+      scenarios: this.assignScenarios(recipients.map((r) => ({ id: r.id, phone: r.phones[0] ?? "" })), idempotencyKey)
+    });
     this.byKey.set(idempotencyKey, { digest: bodyDigest, callId });
     this.emit(callId, "call.created", "Call task accepted.", "queued", { recipients: recipients.length });
     this.schedule(callId);
@@ -179,7 +231,7 @@ export class FakeCalleProvider implements CallProvider {
   private startRecipient(callId: string, recipientId: string): void {
     const entry = this.calls.get(callId);
     const recipient = entry?.call.recipients.find((r) => r.id === recipientId);
-    if (!entry || !recipient || recipient.status !== "queued") {
+    if (!entry || !recipient || recipient.status !== "pending") {
       return;
     }
     recipient.status = "in_progress";
@@ -207,7 +259,7 @@ export class FakeCalleProvider implements CallProvider {
     if (!attempt) {
       return;
     }
-    const scenarioName = this.scenarioFor(recipient.phones[0] ?? "", callId);
+    const scenarioName = entry.scenarios.get(recipient.id) ?? "in_stock_human";
     const scenario = SCENARIOS[scenarioName] ?? SCENARIOS.in_stock_human!;
     const productLabel = typeof entry.call.metadata.product_label === "string" ? entry.call.metadata.product_label : "the product";
     attempt.completedAt = this.now().toISOString();
@@ -268,11 +320,19 @@ export class FakeCalleProvider implements CallProvider {
     return clone(entry.call);
   }
 
-  async listEvents(callId: string): Promise<ProviderEvent[]> {
+  async listEvents(callId: string, after?: string): Promise<ProviderEvent[]> {
     if (!this.calls.has(callId)) {
       throw new ProviderError({ code: "not_found", message: `Call ${callId} not found.`, status: 404, retrySafe: false, callStarted: false });
     }
-    return clone(this.events.get(callId) ?? []);
+    const all = this.events.get(callId) ?? [];
+    const start = after ? Math.max(0, Number(after) || 0) : 0;
+    return clone(all.slice(start));
+  }
+
+  async listEventsAfter(callId: string, after: string | null): Promise<EventPage> {
+    const events = await this.listEvents(callId, after ?? undefined);
+    const start = after ? Math.max(0, Number(after) || 0) : 0;
+    return { events, nextCursor: String(start + events.length) };
   }
 
   /** Test helper: complete every in-flight call immediately. */

@@ -39,13 +39,16 @@ describe("ineligibility", () => {
   it("respects opt-out above everything else", () => {
     expect(ineligibility({ site: site("s1", { optOut: true }), watch, history: fresh, now })).toBe("opted_out");
   });
-  it("applies the per-watch cooldown and the global gap", () => {
-    const tenDaysAgo = new Date(now.getTime() - 10 * 86400000);
-    expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, lastAskedForWatch: tenDaysAgo }, now })).toBe("watch_cooldown");
+  it("counts the per-watch cooldown in ISO weeks and the global gap in days", () => {
+    // now is Monday 2026-09-07 (ISO week 37). Asked last week -> resting; asked two ISO weeks ago,
+    // even 13 days and 23 hours ago on the calendar -> due again. A weekly cron that fires a few
+    // minutes early must never see the whole panel as "asked 13.99 days ago".
+    const lastWeek = new Date("2026-09-04T18:00:00Z");
+    expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, lastAskedForWatch: lastWeek }, now })).toBe("watch_cooldown");
+    const twoWeeksAgoLate = new Date("2026-08-30T17:00:00Z"); // Sunday of week 35, 8 days before now
+    expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, lastAskedForWatch: twoWeeksAgoLate, lastCalledAny: twoWeeksAgoLate }, now })).toBeNull();
     const twoDaysAgo = new Date(now.getTime() - 2 * 86400000);
     expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, lastCalledAny: twoDaysAgo }, now })).toBe("global_gap");
-    const fifteenDaysAgo = new Date(now.getTime() - 15 * 86400000);
-    expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, lastAskedForWatch: fifteenDaysAgo, lastCalledAny: fifteenDaysAgo }, now })).toBeNull();
   });
   it("rests a site that refused for ninety days and drops one that does not carry the product", () => {
     expect(ineligibility({ site: site("s1"), watch, history: { ...fresh, refusedAt: new Date(now.getTime() - 30 * 86400000) }, now })).toBe("refused_recently");

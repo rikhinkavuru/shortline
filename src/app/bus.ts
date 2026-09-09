@@ -4,7 +4,7 @@ export type AppEvent =
   | { type: "dispatch"; dispatchId: string; state: string; callId: string | null; kind: string; siteIds: string[]; note: string | null }
   | { type: "observation"; observationId: string; siteId: string; siteName: string; outcome: string; usable: boolean; usableReason: string; evidenceQuote: string; source: string; watchId: string | null; findRequestId: string | null }
   | { type: "estimate"; watchId: string; isoWeek: string; signal: string; pHat: number | null }
-  | { type: "call_event"; callId: string; eventType: string; message: string; details: Record<string, unknown> }
+  | { type: "call_event"; callId: string; eventId: string; eventType: string; message: string; details: Record<string, unknown> }
   | { type: "find"; findRequestId: string; status: string; confirmed: number; need: number }
   | { type: "sweep"; sweepId: string; watchId: string; isoWeek: string; status: string; note: string }
   | { type: "notice"; level: "info" | "warn"; message: string };

@@ -10,19 +10,19 @@ Phone calls as a statistical sensor network for drug shortages: rotating pharmac
 
 ## Inspiration
 
-Active US drug shortages rose for the third straight quarter to 227 in Q2 2026 (ASHP / University of Utah). The national lists say *that* a shortage exists; they cannot tell a pharmacist whether the store across the street can fill a prescription this afternoon. Hospital pharmacy teams spend about 20 staff-hours a week managing shortages, a full-time job at 300+ beds, and much of it is phone work: calling wholesalers, sister hospitals, and retail pharmacies one at a time. I work on manufacturing for shortage-critical injectables, and the recurring line from pharmacists is "we just phone around." Pharmacies have no inventory API. The phone is the API. Nobody had built the instrument.
+Active US drug shortages rose for the third straight quarter to 227 in Q2 2026 (ASHP / University of Utah Drug Information Service: https://www.ashp.org/drug-shortages/shortage-resources/drug-shortages-statistics). The national lists say *that* a shortage exists; they cannot tell a pharmacist whether the store across the street can fill a prescription this afternoon. ASHP's shortage surveys describe pharmacy teams spending on the order of 20 staff-hours a week managing shortages, a full-time job at 300 beds and more, and much of it is phone work: calling wholesalers, sister hospitals, and retail pharmacies one at a time. I work on manufacturing for shortage-critical injectables, and the recurring line from pharmacists is "we just phone around." Pharmacies have no inventory API. The phone is the API. Street-level availability has only ever been measured by hand, in one-off phone audits; nobody runs it continuously with sampling and intervals.
 
 ## What it does
 
 Shortline treats a phone call as a measurement.
 
-**Surveillance.** Every week it draws a fresh random subsample of pharmacies per region and per kind (chain / independent), calls them through CALL-E with one disclosed question — can you dispense this product today? — and estimates availability per stratum with Wilson score intervals, combined into a regional index with finite-population correction. The signal is `available`, `strained`, `shortage` (declared only when the *upper* bound of the interval is below the line), or `insufficient_data`. Coverage and response rate are shown next to every estimate.
+**Monitoring.** Every week it draws a fresh random subsample of pharmacies per region and per kind (chain / independent), calls them through CALL-E with one disclosed question (can you dispense this product today?) and estimates availability per stratum with Wilson score intervals, combined into a regional index with frame weights and finite-population correction; the combined band is a Wilson interval on the effective sample size, so unanimous answers never collapse it to a point. The signal is `available`, `strained`, `shortage` (declared only when the *upper* bound of the interval is below the line), or `insufficient_data`. Coverage, response rate, method, and effective sample size are shown next to every estimate. At demo scale the pooled Wilson fallback is the operating estimator most weeks, and the dashboard says so.
 
-**Evidence gates.** A schema-valid structured result is not yet an observation. Shortline checks that a person in the pharmacy answered, that the assistant actually named the product, and that the evidence quote appears in the callee's own transcript turns. Voicemail, phone menus that never reach a person, refusals, wrong numbers, and unattributed quotes are recorded and shown with their reason, never counted as "no".
+**Evidence gates.** A schema-valid structured result is not yet an observation. Shortline checks that the recipient actually completed, that a person in the pharmacy answered, that the assistant actually named the product, and that the evidence quote appears as a contiguous phrase in the callee's own transcript turns (a bag-of-words check was tried and rejected because "we have that in stock" reduces to "stock"). Voicemail, phone menus that never reach a person, refusals, wrong numbers, and unattributed quotes are recorded and shown with their reason, never counted as "no".
 
-**Courtesy by design.** No pharmacy is asked about the same product more than once per cooldown, calls happen only inside the site's local calling window (IANA timezone per site, never inferred), a refusal rests a site for 90 days, two "not reached" outcomes drop a number from the frame, and "please don't call again" opts a site out of everything, permanently.
+**Courtesy by design.** Published pharmacy business lines only, one factual question, automation disclosed in the first sentence together with "you can ask us not to call again". No pharmacy is asked about the same product in the same or the previous ISO week, no site is called for any reason within five days of the last call, nothing with a call in flight is dialled again, calls happen only inside the site's local calling window (IANA timezone per site, never inferred), a refusal rests a site for 90 days, two "not reached" outcomes drop a number from the frame, and "please don't call again" opts a site out of everything, permanently, with an audit row an operator cannot undo from the dashboard.
 
-**Find it now.** A sourcing request names a product, region, and how many confirmed sources are needed. Planning never dials. Pharmacies seen in stock in the last 24 hours are returned without a call; pharmacies seen out of stock are skipped; the rest are dialled in waves of three, stopping the moment the need is met. Every sourcing call is also a surveillance observation, so the two halves feed each other.
+**Find it now.** A sourcing request names a product, region, and how many confirmed sources are needed. Planning never dials and states both the calls the first wave places and the most the request could place. Pharmacies seen in stock for that product in the last 24 hours are returned without a call; pharmacies seen out of stock are skipped; the rest are dialled in waves of three, numbered from the ledger so a crash or a rate limit can never re-dial a wave, stopping the moment the need is met. Sourcing answers update the sightings cache and the frame but never the weekly index, because they are outcome-selected.
 
 **Surfaces.** A dashboard with a live event feed and transcript evidence, a CLI, an MCP server (read tools are read-only; running a request needs `confirm: true` and carries the destructive annotation), and a portable Agent Skill.
 
@@ -34,7 +34,7 @@ CALL-E usage: batch call tasks with `recipients`, a strict `recipient_result_sch
 
 Dispatches follow the community production guide: reserved → accepted → terminal_unverified → terminal_verified, with `submission_unknown` replayed under the same key and `needs_human` for any binding or evidence failure.
 
-Dry-run is the default. A scripted fake provider plays fifteen callee scenarios (including a schema-valid result whose quote is invented and a call where the product was never named), and a fake HTTP server lets the real SDK adapter be tested end to end, webhooks included. 63 tests run without a network or credentials.
+Dry-run is the default. A scripted fake provider plays fifteen callee scenarios (including a schema-valid result whose quote is invented and a call where the product was never named), a fake HTTP server lets the real SDK adapter be tested end to end, webhooks included, and an API-shaped terminal snapshot fixture is parsed through the official SDK client with a stubbed fetch. The whole test suite runs without a network or credentials; `npm run eval` reports interval coverage and the false-shortage rate of the upper-bound rule over thousands of simulated weeks.
 
 ## Challenges we ran into
 
@@ -64,11 +64,12 @@ TypeScript, Node.js, node:sqlite, Hono, @call-e/calle (CALL-E server SDK), Model
 
 ```bash
 git clone https://github.com/rikhinkavuru/shortline && cd shortline
-npm install && npm test          # 63 tests, no credentials
+npm install && npm test          # no credentials, no network
+npm run eval                     # interval coverage and false-shortage rate over simulated weeks
 SHORTLINE_FAKE_PACE_MS=1500 npm run demo
 ```
 
-Open http://127.0.0.1:8787/. Tick "Ignore calling hours (dry-run only)", click **Run sweep now**, then plan and run a **Find it now** request. Click **transcript** on any observation. To verify the live SDK path without placing a call: `SHORTLINE_MODE=live CALLE_API_KEY=... SHORTLINE_LIVE_ACK=I_UNDERSTAND_REAL_CALLS_COST_MONEY_AND_CANNOT_BE_RECALLED npm run dev -- auth-check`.
+Open http://127.0.0.1:8787/. Tick "Ignore calling hours (dry-run only)", click **Run sweep now**, then plan and run a **Find it now** request. Click **transcript** on any observation. To verify the live SDK path without placing a call: `SHORTLINE_MODE=live CALLE_API_KEY=... SHORTLINE_LIVE_ACK=I_UNDERSTAND_REAL_CALLS_COST_MONEY_AND_CANNOT_BE_RECALLED SHORTLINE_CALLER_NAME=Shortline npx shortline auth-check` (it calls `client.goals.list` through `@call-e/calle`). Masked snapshots of real calls placed during development are in `docs/evidence/`.
 
 Hosted dry-run demo (no calls possible): https://shortline-rikhinkavuru-9840s-projects.vercel.app/
 

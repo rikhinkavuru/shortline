@@ -50,19 +50,25 @@ describe("rankCandidates", () => {
 describe("nextWave", () => {
   const ranked = rankCandidates(["a", "b", "c", "d", "e"].map((id) => ({ site: site(id), distanceKm: null, recent: null, ineligible: null })));
   it("dispatches need+1 sites on the first wave and never re-dials a used site", () => {
-    const first = nextWave(request(), ranked);
+    const first = nextWave(request(), ranked, 0);
     expect(first).toEqual({ action: "dispatch", siteIds: ["a", "b", "c"], waveIndex: 0 });
-    const second = nextWave(request({ usedSiteIds: ["a", "b", "c"], confirmedSiteIds: ["a"] }), ranked);
+    const second = nextWave(request({ usedSiteIds: ["a", "b", "c"], confirmedSiteIds: ["a"] }), ranked, 1);
     expect(second.action).toBe("dispatch");
     expect(second.waveIndex).toBe(1);
     expect(second.siteIds).toEqual(["d", "e"]);
   });
+  it("takes the wave index from the ledger, so a short wave never repeats an index", () => {
+    // need=1: waves of 2 (need+1). After three short waves the ledger holds 3 rows; the next index must be 3.
+    const r = request({ need: 1, waveSize: 3, maxWaves: 6, usedSiteIds: ["a", "b", "c", "d"] });
+    const next = nextWave(r, ranked, 3);
+    expect(next).toEqual({ action: "dispatch", siteIds: ["e"], waveIndex: 3 });
+  });
   it("stops the moment the need is met", () => {
-    expect(nextWave(request({ usedSiteIds: ["a", "b", "c"], confirmedSiteIds: ["a", "b"] }), ranked).action).toBe("met");
+    expect(nextWave(request({ usedSiteIds: ["a", "b", "c"], confirmedSiteIds: ["a", "b"] }), ranked, 1).action).toBe("met");
   });
   it("stops at the wave cap and when candidates run out", () => {
-    expect(nextWave(request({ maxWaves: 1, usedSiteIds: ["a", "b", "c"] }), ranked).action).toBe("exhausted");
-    expect(nextWave(request({ usedSiteIds: ["a", "b", "c", "d", "e"] }), ranked).action).toBe("exhausted");
+    expect(nextWave(request({ maxWaves: 1, usedSiteIds: ["a", "b", "c"] }), ranked, 1).action).toBe("exhausted");
+    expect(nextWave(request({ usedSiteIds: ["a", "b", "c", "d", "e"] }), ranked, 2).action).toBe("exhausted");
   });
 });
 

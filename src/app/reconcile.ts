@@ -5,6 +5,7 @@ import { maskDeep } from "../domain/phone.js";
 import { isoWeek } from "../domain/time.js";
 import type { Dispatch, Observation, Product, Site } from "../domain/types.js";
 import type { AppContext } from "./context.js";
+import { emitNewCallEvents, forgetCallEvents } from "./call-events.js";
 import { recomputeEstimate } from "./estimate.js";
 import { applyFindObservations } from "./find-state.js";
 
@@ -34,7 +35,8 @@ function snapshotOf(recipient: ProviderRecipient): RecipientSnapshot {
     status: recipient.status,
     structuredResult: recipient.structuredResult,
     transcript: (attempt?.transcriptTurns ?? []).map((t) => ({ speaker: t.speaker, text: t.text })),
-    attemptFailureCode: attempt?.failureCode ?? null
+    attemptFailureCode: attempt?.failureCode ?? null,
+    attemptStarted: recipient.attempts.some((a) => a.startedAt !== null)
   };
 }
 
@@ -165,10 +167,14 @@ export async function reconcileDispatch(ctx: AppContext, dispatch: Dispatch): Pr
       findRequestId: obs.findRequestId
     });
   }
+  if (current.callId) {
+    await emitNewCallEvents(ctx, current.callId);
+    forgetCallEvents(ctx, current.callId);
+  }
   const verified = ctx.repo.transition(current.id, "terminal_verified", { note });
   ctx.bus.emit({ type: "dispatch", dispatchId: verified.id, state: verified.state, callId: verified.callId, kind: verified.kind, siteIds: verified.siteIds, note });
-  if (verified.watchId) {
-    const week = verified.sweepId ? ctx.repo.listSweeps(verified.watchId).find((s) => s.id === verified.sweepId)?.isoWeek : undefined;
+  if (verified.watchId && verified.sweepId) {
+    const week = ctx.repo.listSweeps(verified.watchId).find((s) => s.id === verified.sweepId)?.isoWeek;
     recomputeEstimate(ctx, verified.watchId, week ?? isoWeek(new Date(observations[0]?.observedAt ?? ctx.now().toISOString())));
   }
   if (verified.findRequestId) {
@@ -195,9 +201,7 @@ export async function settle(ctx: AppContext, dispatchIds: string[], options: { 
         continue;
       }
       if (dispatch.callId) {
-        for (const e of await ctx.provider.listEvents(dispatch.callId).catch(() => [])) {
-          ctx.bus.emit({ type: "call_event", callId: dispatch.callId, eventType: e.type, message: e.message, details: e.details });
-        }
+        await emitNewCallEvents(ctx, dispatch.callId);
       }
       let result: ReconcileResult = "pending";
       try {

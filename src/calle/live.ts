@@ -1,5 +1,5 @@
 import { CalleAPIError, CalleClient, CalleConnectionError, CalleRateLimitError, CalleTimeoutError, type Call } from "@call-e/calle";
-import { type CallProvider, type CreateBatchInput, type ProviderCall, type ProviderEvent, ProviderError } from "./provider.js";
+import { type CallProvider, type CreateBatchInput, type EventPage, type ProviderCall, type ProviderEvent, ProviderError } from "./provider.js";
 
 export interface LiveProviderOptions {
   apiKey: string;
@@ -129,10 +129,22 @@ export class LiveCalleProvider implements CallProvider {
     }
   }
 
-  async listEvents(callId: string): Promise<ProviderEvent[]> {
+  async listEventsAfter(callId: string, after: string | null): Promise<EventPage> {
+    try {
+      const list = await this.client.calls.listEvents(callId, after ? { cursor: after, limit: 100 } : { limit: 100 });
+      return {
+        events: list.data.map((e) => ({ id: e.id, type: e.type, callId: e.call_id, createdAt: e.created_at, level: e.level, status: e.status, message: e.message, details: e.details })),
+        nextCursor: list.nextCursor
+      };
+    } catch (error) {
+      throw translate(error, "read");
+    }
+  }
+
+  async listEvents(callId: string, after?: string): Promise<ProviderEvent[]> {
     try {
       const out: ProviderEvent[] = [];
-      let cursor: string | undefined;
+      let cursor: string | undefined = after;
       for (let page = 0; page < 10; page += 1) {
         const list = await this.client.calls.listEvents(callId, cursor ? { cursor, limit: 100 } : { limit: 100 });
         for (const e of list.data) {

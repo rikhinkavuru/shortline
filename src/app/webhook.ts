@@ -24,6 +24,12 @@ export function handleWebhook(ctx: AppContext, rawBody: string, headerEventId: s
   if (!headerEventId || headerEventId !== parsed.id) {
     return { status: 400, body: { error: "invalid_event_id" } };
   }
+  // Unknown call ids are not stored: the route is unauthenticated, and a call that
+  // is not bound to one of our dispatches cannot wake anything useful. A delivery
+  // that races the call-id binding is recovered by the next poll.
+  if (!ctx.repo.getDispatchByCallId(parsed.data.id)) {
+    return { status: 200, body: { ok: true, ignored: true } };
+  }
   const outcome = ctx.repo.receiveEvent(parsed.id, parsed.data.id, parsed.type, rawBody);
   if (outcome === "conflict") {
     ctx.bus.emit({ type: "notice", level: "warn", message: `webhook ${parsed.id} redelivered with a different body; quarantined` });
