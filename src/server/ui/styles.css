@@ -140,12 +140,12 @@ td.num, th.num { font-family: var(--mono); text-align: right; }
 .sites td:last-child { text-align: right; }
 .panel-sites table { display: block; max-height: 420px; overflow: auto; }
 .panel-sites thead, .panel-sites tbody, .panel-sites tr { display: table; width: 100%; min-width: 540px; table-layout: fixed; }
-.panel-sites th:nth-child(1), .panel-sites td:nth-child(1) { width: 26%; }
+.panel-sites th:nth-child(1), .panel-sites td:nth-child(1) { width: 21%; }
 .panel-sites th:nth-child(2), .panel-sites td:nth-child(2) { width: 20%; }
 .panel-sites th:nth-child(3), .panel-sites td:nth-child(3) { width: 16%; }
-.panel-sites th:nth-child(4), .panel-sites td:nth-child(4) { width: 24%; }
+.panel-sites th:nth-child(4), .panel-sites td:nth-child(4) { width: 23%; }
 .panel-sites th:nth-child(5), .panel-sites td:nth-child(5) { width: 6%; }
-.panel-sites th:nth-child(6), .panel-sites td:nth-child(6) { width: 8%; }
+.panel-sites th:nth-child(6), .panel-sites td:nth-child(6) { width: 14%; }
 .sites td small { display: block; color: var(--paper-3); font-size: 11px; }
 
 dialog { background: var(--ink-2); color: var(--paper); border: 1px solid var(--line); border-radius: 10px; width: min(720px, 92vw); max-width: 92vw; padding: 18px; }
