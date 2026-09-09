@@ -38,6 +38,17 @@ Built for the CALL-E "Your Code Is Calling" hackathon. Dry-run by default; no ca
 
 Shortline treats each call as a **measurement** with known noise (voicemail, menus, refusals, wrong numbers, extraction errors) and designs around it: sampling instead of census, intervals instead of point claims, courtesy as a property of the sampling design rather than a rate limiter bolted on.
 
+Does the interval mean anything? `npm run eval` replays 10,000 simulated weeks against a population with known truth (one second, no network):
+
+| Claim | Measured |
+| --- | --- |
+| 95% interval covers the true share | 96.5% (stratified branch), 98.3% (pooled branch), 97.6% overall |
+| False shortage at a true share of 0.556, upper-bound rule vs naive point rule | 0.4% vs 27.2% |
+| Detection at a true share of 0.444, same two rules | 3.8% vs 65.3% (the price of precision at a panel of 3) |
+| Bias from fabricated in-stock quotes at a 10% rate, evidence gate on vs off | +0.029 vs +0.052 |
+
+Details and the honest reading of each row: `docs/eval.md`.
+
 ## Who is called, and why it is acceptable
 
 - Published pharmacy business lines only, never individuals. Shortline has no consent record for calling a person and therefore cannot call one.
@@ -62,6 +73,7 @@ Requires Node.js 22.13 or newer (uses the built-in `node:sqlite`).
 ```bash
 npm install
 npm test           # no network, no credentials
+npm run eval       # interval coverage and false-shortage rates over 10,000 simulated weeks
 npm run demo       # loads 36 fictional pharmacies, simulates 8 weeks, opens the dashboard
 ```
 
@@ -115,7 +127,7 @@ Only sweep observations enter the index. Per stratum, availability (in stock or 
 - `strained` when the point estimate is below 70%;
 - `insufficient_data` when fewer than `minUsable` observations survived the gates.
 
-Coverage (share of the frame represented by strata with data), response rate, method, and effective sample size are reported next to every estimate. Details, assumptions, and limits: `docs/statistics.md`.
+Coverage (share of the frame represented by strata with data), response rate, method, and effective sample size are reported next to every estimate. Details, assumptions, and limits: `docs/statistics.md`; measured coverage and error rates: `docs/eval.md`.
 
 ### 5. Find it now
 

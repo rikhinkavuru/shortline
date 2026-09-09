@@ -68,6 +68,10 @@ The finite-population correction matters here: with a frame of 6 and a panel of 
 
 Shortage is declared on the **upper bound**, so a wide interval that merely dips below the line does not trip it. This trades sensitivity for precision on purpose: a false shortage alert sends people phoning.
 
+## Measured behaviour
+
+`npm run eval` (see `docs/eval.md`) replays 10,000 simulated weeks with a known finite-population truth through the real `planSweep`, `classifyRecipient`, `combineStrata`, and `classifySignal`. Interval coverage is 96.5% on the stratified branch and 98.3% on the pooled branch; the upper-bound shortage rule fires falsely in 0.4% of weeks at a true share of 0.556 where a naive point rule fires in 27.2%, and detects a true share of 0.444 in only 3.8% of weeks against 65.3%, which is the sensitivity this design deliberately gives up at a panel of three; the evidence gate roughly halves the bias introduced by fabricated in-stock quotes.
+
 ## What the index is not
 
 - It is not a measure of national supply. It is a street-level measure for the regions in the frame.

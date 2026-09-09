@@ -44,7 +44,7 @@ Dry-run is the default. A scripted fake provider plays fifteen callee scenarios 
 
 ## Accomplishments we're proud of
 
-- The index reports what it does not know: intervals, coverage, response rate, method, and a dashed marker for weeks with insufficient data.
+- The index reports what it does not know: intervals, coverage, response rate, method, effective sample size, and a dashed marker for weeks with insufficient data. `npm run eval` checks it against known truth: 96.5% to 98.3% interval coverage, a 0.4% false-shortage rate for the upper-bound rule against 27.2% for a naive point rule, and an evidence gate that halves the bias from fabricated quotes.
 - Every observation in the dashboard links to a masked transcript with the evidence quote highlighted in the pharmacy's words, or the reason it was not counted.
 - The whole system is honest about simulation: dry-run observations are marked `simulated` row by row and the chart says so.
 
