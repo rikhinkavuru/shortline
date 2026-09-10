@@ -1,0 +1,252 @@
+[
+  {
+    "id": "evt_9a5f09341a889f08e5e5d0af",
+    "type": "call.started",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:57:20.357666Z",
+    "level": "info",
+    "status": "completed",
+    "message": "run_call started.",
+    "details": {}
+  },
+  {
+    "id": "evt_e34cb82589810a637526a8bd",
+    "type": "call.in_progress",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:57:23.157335Z",
+    "level": "info",
+    "status": "completed",
+    "message": "botlab create bot.",
+    "details": {}
+  },
+  {
+    "id": "evt_9d3c80865bcfc28901fd2337",
+    "type": "call.in_progress",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:59:50.388891Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling resolve robot id.",
+    "details": {}
+  },
+  {
+    "id": "evt_d231b899f7ab910b7e98b23e",
+    "type": "call.in_progress",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:59:53.092716Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling create task.",
+    "details": {}
+  },
+  {
+    "id": "evt_125e5fff2399f7e86a671860",
+    "type": "call.completed",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:59:54.975740Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task created.",
+    "details": {}
+  },
+  {
+    "id": "evt_a7d70a1883f98e919d9ce46c",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-09T23:59:55.472230Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=pending",
+    "details": {}
+  },
+  {
+    "id": "evt_df815d5283cc838622fc0e20",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:00.688633Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=calling",
+    "details": {}
+  },
+  {
+    "id": "evt_48bd9e9fca3652c16568ef10",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:05.277586Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call is ringing.",
+    "details": {}
+  },
+  {
+    "id": "evt_af923ae0dd7b475a96009ca2",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:08.903527Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call connected.",
+    "details": {}
+  },
+  {
+    "id": "evt_fc60ad3c942f702baf05d259",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:10.071286Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Hello,",
+    "details": {}
+  },
+  {
+    "id": "evt_361ad6d24974efd31c3f51e5",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:10.672810Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: this is an automated assistant calling for Shortline. This call will take under a minute and may be recorded;",
+    "details": {}
+  },
+  {
+    "id": "evt_cc4c1342cb72dd8efb007836",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:15.983901Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: you can ask not to be called again and the calls will stop.",
+    "details": {}
+  },
+  {
+    "id": "evt_f8adb90bc9e53aa65fd34bea",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:24.333792Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Okay.",
+    "details": {}
+  },
+  {
+    "id": "evt_00fc28e5868ac8605f8c5d99",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:25.273256Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Can you hear me?",
+    "details": {}
+  },
+  {
+    "id": "evt_4009cbe723d0799fabc04472",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:28.294190Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Okay. Yes. I can.",
+    "details": {}
+  },
+  {
+    "id": "evt_dafb025ab66d082d7d3a8a56",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:30.400464Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Do you currently have amoxicillin four hundred milligrams per five milliliters oral suspension in stock and able to dispense today?",
+    "details": {}
+  },
+  {
+    "id": "evt_08f08d68ac4cc7bfe7f26110",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:38.874632Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yeah. We have",
+    "details": {}
+  },
+  {
+    "id": "evt_84d564fbfe143e015b0ddc36",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:39.826409Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yeah. We have plenty in stock.",
+    "details": {}
+  },
+  {
+    "id": "evt_06a29da46965c010fef4442c",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:40.844757Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee said: Yeah. We have plenty in stock. No limit.",
+    "details": {}
+  },
+  {
+    "id": "evt_950218c2587aee6a3aeedf4a",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:41.845183Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_d898b062aff292b7d262177e",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:42.343672Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Callee speech detected.",
+    "details": {}
+  },
+  {
+    "id": "evt_ef141d98b62701845da87caa",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:42.656010Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Bot is speaking: Thank you, bye.",
+    "details": {}
+  },
+  {
+    "id": "evt_887b20c4e627dee897492ddf",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:45.158164Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call ended; syncing final Calling result.",
+    "details": {}
+  },
+  {
+    "id": "evt_eef1e9192c8ace32de0963d8",
+    "type": "call.completed",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:00:53.668671Z",
+    "level": "info",
+    "status": "completed",
+    "message": "Call ended from realtime events.",
+    "details": {}
+  },
+  {
+    "id": "evt_c84a1cafa13938fb61c6ae59",
+    "type": "call.updated",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "createdAt": "2026-09-10T00:01:34.721262Z",
+    "level": "info",
+    "status": "completed",
+    "message": "calling task status=finished",
+    "details": {}
+  }
+]

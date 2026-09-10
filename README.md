@@ -63,7 +63,7 @@ Details and the honest reading of each row: `docs/eval.md`.
 | --- | --- |
 | Real world impact | *Why* above; `docs/statistics.md` for what the index can and cannot claim |
 | Quality of the idea | rotating panel + evidence gates + sourcing waves fed by fresh sightings (`src/domain/`) |
-| Technical implementation | official `@call-e/calle` SDK 0.7 batch calls with `recipient_result_schema`, task-level `result_schema` cross-check, idempotency keys, terminal webhooks validated on `CALL-E-Event-Id` then reconciled through an authenticated read, developer events (`src/calle/`, `src/app/`). **Verified against CALL-E on 2026-09-09: `call_YlsT1pFwDVuUGlQEWIsk6Q`**, a live sourcing call answered "only a couple of bottles, next delivery Thursday" and classified `limited`/verified; masked snapshot, events, and observation in `docs/evidence/`, and `test/provider.test.ts` parses that snapshot through the SDK client |
+| Technical implementation | official `@call-e/calle` SDK 0.7 batch calls with `recipient_result_schema`, task-level `result_schema` cross-check, idempotency keys, terminal webhooks validated on `CALL-E-Event-Id` then reconciled through an authenticated read, developer events (`src/calle/`, `src/app/`). **Verified against CALL-E on 2026-09-09 with three live sourcing calls**: `call_YlsT1pFwDVuUGlQEWIsk6Q` ("only a couple of bottles, next delivery Thursday" → `limited`, verified), `call_XAMZ5x6hkb9A0jH3PPgyaw` ("we can't give out stock information over the phone" → `refused`, not counted), `call_fMIFph9e84TopidTYraRmQ` ("plenty in stock" → `in_stock`, verified); masked snapshots, events, and observations in `docs/evidence/`, each replayed through the SDK client by `test/provider.test.ts` |
 | Product experience | dashboard with live feed and transcript evidence, CLI, MCP server, portable skill (`src/server/`, `src/cli.ts`, `src/mcp/`, `skill/shortline-find/` here, `skills/shortline-find/` in the community repo) |
 
 ## Try it in two minutes (no account, no calls)
@@ -150,7 +150,7 @@ Then, step by step with expected output in `docs/live-runbook.md`:
 npx shortline auth-check                                   # read-only, through the SDK: client.goals.list({limit: 1})
 npx shortline site add --id demo-me --name "Corner Pharmacy" --kind independent \
   --phone +1XXXXXXXXXX --region US-CA-SF --tz America/Los_Angeles --test-line   # your own phone: never sampled, never in the index
-npx shortline find --watch amoxicillin-susp --region US-CA-SF --only-site demo-me --need 1 --wave 1 --yes   # one real call, to you
+npx shortline find --watch amoxicillin-susp --region US-CA-SF --only-site demo-me --need 1 --wave 1 --yes   # one real call, to you (add --fresh to re-dial within 24h)
 npx shortline evidence --dispatch dsp_...                  # masked snapshot, events, observations into docs/evidence/
 npx shortline watch add --id albuterol --name albuterol --strength "90 mcg" --form inhaler --regions US-CA-SF
 npx shortline sweep --watch albuterol --wait               # only sites inside their local window are dialled

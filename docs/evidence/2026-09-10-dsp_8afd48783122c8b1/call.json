@@ -1,0 +1,109 @@
+{
+  "id": "call_fMIFph9e84TopidTYraRmQ",
+  "object": "call_task",
+  "status": "completed",
+  "task": "You are calling a pharmacy. Identify yourself immediately as an automated assistant calling for Shortline, a project that tracks medication availability. Say the call will take under a minute, that it may be recorded, and that they can ask not to be called again and you will stop. If you reach a phone menu, choose the option for the pharmacy or to speak with pharmacy staff. Use the keypad when the menu asks for it. If you reach voicemail, do not leave a message and end the call. Once you are speaking with pharmacy staff, ask one question: whether they currently have amoxicillin 400 mg/5 mL oral suspension in stock and able to dispense today. If they say yes, ask whether supply is limited. If they say no or limited, ask when they expect the next delivery. Do not ask them to hold or reserve anything. Do not place an order, do not discuss any patient, do not ask about prices, and do not ask for anything beyond these questions. If they say they cannot share stock information over the phone, thank them and end the call. If they ask not to be called again, apologise, confirm you will note it, and end the call. Be brief and polite. Thank them and end the call as soon as you have an answer.",
+  "recipients": [
+    {
+      "id": "rcp_c584e91b1640e572",
+      "phones": [
+        "+14155550190"
+      ],
+      "region": null,
+      "locale": null,
+      "status": "completed",
+      "structured_result": {
+        "answered_by": "human",
+        "availability": "in_stock",
+        "quantity_note": "No limit.",
+        "evidence_quote": "plenty in stock",
+        "reached_pharmacy": "yes",
+        "do_not_call_request": "no",
+        "restock_expectation": ""
+      },
+      "summary": "The pharmacy was reached and provided a clear stock answer. Amoxicillin 400 mg/5 mL oral suspension is currently in stock, can be dispensed today, and supply is not limited.",
+      "attempts": [
+        {
+          "id": "att_86afdf05c9a46c2b",
+          "phone": "+14155550190",
+          "status": "completed",
+          "started_at": "2026-09-09T20:00:08",
+          "completed_at": "2026-09-09T20:00:44",
+          "summary": null,
+          "transcript_turns": [
+            {
+              "offset_seconds": 0,
+              "speaker": "bot",
+              "text": "Hello,"
+            },
+            {
+              "offset_seconds": 0,
+              "speaker": "bot",
+              "text": "this is an automated assistant calling for Shortline. This call will take under a minute and may be recorded;"
+            },
+            {
+              "offset_seconds": 5,
+              "speaker": "bot",
+              "text": "you can ask not to be called again and the calls will stop."
+            },
+            {
+              "offset_seconds": 15,
+              "speaker": "bot",
+              "text": "Can you hear me?"
+            },
+            {
+              "offset_seconds": 18,
+              "speaker": "user",
+              "text": "Okay. Yes. I can."
+            },
+            {
+              "offset_seconds": 20,
+              "speaker": "bot",
+              "text": "Do you currently have amoxicillin four hundred milligrams per five milliliters oral suspension in stock and able to dispense today?"
+            },
+            {
+              "offset_seconds": 30,
+              "speaker": "user",
+              "text": "Yeah. We have plenty in stock. No limit."
+            },
+            {
+              "offset_seconds": 32,
+              "speaker": "bot",
+              "text": "Thank you, bye."
+            }
+          ],
+          "provider_call_id": null,
+          "failure_code": null,
+          "failure_message": null
+        }
+      ]
+    }
+  ],
+  "structured_result": {
+    "pharmacies_reached": 1
+  },
+  "summary": "The pharmacy was reached and provided a clear stock answer. Amoxicillin 400 mg/5 mL oral suspension is currently in stock, can be dispensed today, and supply is not limited.",
+  "task_completed": true,
+  "completion_confidence": {
+    "score": 0.92,
+    "label": "high"
+  },
+  "evidence": [
+    "Pharmacy staff were reached and answered the medication availability question.",
+    "They confirmed the medication is in stock and available to dispense today.",
+    "They indicated supply is plentiful with no limit mentioned."
+  ],
+  "metadata": {
+    "app": "shortline",
+    "kind": "find",
+    "watch_id": "amoxicillin-susp",
+    "dispatch_id": "dsp_8afd48783122c8b1",
+    "product_label": "amoxicillin 400 mg/5 mL oral suspension",
+    "schema_version": "shortline.recipient.v1",
+    "find_request_id": "fnd_de6b1e45f36a3ee7"
+  },
+  "failure_code": null,
+  "failure_message": null,
+  "created_at": "2026-09-09T23:57:07.204947Z",
+  "completed_at": "2026-09-10T00:01:10.941172Z"
+}

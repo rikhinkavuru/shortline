@@ -40,6 +40,8 @@ Expected output: `status: "met"`, one confirmed source with `outcome: "limited"`
 
 Cost: one recipient per attempt.
 
+Rehearsing more than once within 24 hours? After an in-stock answer the planner will list your test line under *known sources* and place no call. Add `--fresh` (dashboard: "Call even if seen in stock recently") to dial anyway; that flag only affects which sites are dialled, never the courtesy rules for real pharmacies' business lines beyond a re-verification call.
+
 ## 3. Export the evidence the same day
 
 Transcripts are purged after 14 days, so export immediately. The dispatch id is printed by the find command (`dsp_...`) and shown in the dashboard feed.

@@ -27,7 +27,7 @@ Watch the feed: dialing → recipient completed → observation **limited**, evi
 **1:45–2:10 — evidence gates.** Scroll the feed from the simulated sweep.
 "Not every answer counts. Here CALL-E returned a schema-valid 'in stock' but the quote isn't in the transcript — not counted. Here the assistant never named the product — not counted. Voicemail, menus that never reach a person, refusals: recorded, shown, never treated as a 'no'."
 
-**2:10–2:30 — the loop.** Click **Plan** again for the same product: the pharmacy you just called appears under *Known sources (no call needed)*.
+**2:10–2:30 — the loop.** Click **Plan** again for the same product (leave "Call even if seen in stock recently" unticked): the pharmacy you just called appears under *Known sources (no call needed)* with your quote. For shot one, tick that box if you rehearsed within the last 24 hours, so the phone rings.
 "Fresh sightings feed the next sourcing wave and the courtesy ledger, and the weekly index stays a random sample. Waves of three, stop the moment enough pharmacies have confirmed."
 
 **2:30–2:40 — close.** README on screen.

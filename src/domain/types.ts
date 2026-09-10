@@ -219,6 +219,8 @@ export interface FindRequest {
   askHold: boolean;
   /** Restrict candidates to these site ids (smoke tests, single-site checks). */
   onlySiteIds?: string[];
+  /** Call sites even when a fresh in-stock sighting exists (rehearsals, re-verification). */
+  ignoreKnownSources?: boolean;
   status: FindStatus;
   plannedSiteIds: string[];
   usedSiteIds: string[];

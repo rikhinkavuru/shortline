@@ -115,6 +115,7 @@ export function createApp(ctx: AppContext): Hono {
     ...(typeof body.waveSize === "number" ? { waveSize: body.waveSize } : {}),
     ...(typeof body.maxWaves === "number" ? { maxWaves: body.maxWaves } : {}),
     askHold: Boolean(body.askHold),
+    ignoreKnownSources: Boolean(body.ignoreKnownSources),
     // The dashboard checkbox is masked to false in live mode; the CLI and MCP surfaces throw instead.
     ignoreWindow: Boolean(body.ignoreWindow) && ctx.config.mode !== "live",
     ...(body.near && typeof body.near === "object" ? { near: body.near as { lat: number; lng: number } } : {}),

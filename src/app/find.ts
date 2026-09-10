@@ -22,6 +22,8 @@ export interface PlanFindInput {
   window?: CallWindow;
   /** Restrict candidates to these site ids, e.g. an operator's own test line for a live smoke test. */
   onlySiteIds?: string[];
+  /** Dial even sites seen in stock within the last 24 hours instead of reusing the sighting. */
+  ignoreKnownSources?: boolean;
 }
 
 export interface FindPreview {
@@ -125,13 +127,11 @@ function candidatesFor(ctx: AppContext, request: FindRequest, options: Candidate
       }
     }
     let recent: FindCandidate["recent"] = null;
-    if (!site.testLine) {
-      const latest = latestForProduct(ctx, site.id, request.product, (o) => o.usable);
-      if (latest) {
-        recent = { outcome: latest.outcome, observedAt: latest.observedAt, ageHours: (now.getTime() - new Date(latest.observedAt).getTime()) / 3600000 };
-      }
+    const latest = latestForProduct(ctx, site.id, request.product, (o) => o.usable);
+    if (latest) {
+      recent = { outcome: latest.outcome, observedAt: latest.observedAt, ageHours: (now.getTime() - new Date(latest.observedAt).getTime()) / 3600000 };
     }
-    if (!ineligible && recent && recent.ageHours <= KNOWN_FRESH_HOURS && (recent.outcome === "in_stock" || recent.outcome === "limited")) {
+    if (!ineligible && !request.ignoreKnownSources && recent && recent.ageHours <= KNOWN_FRESH_HOURS && (recent.outcome === "in_stock" || recent.outcome === "limited")) {
       ineligible = "known_source_no_call_needed";
     }
     const distanceKm = options.near && site.lat !== undefined && site.lng !== undefined ? haversineKm(options.near, { lat: site.lat, lng: site.lng }) : null;
@@ -143,8 +143,8 @@ function candidatesFor(ctx: AppContext, request: FindRequest, options: Candidate
     }
     list.push(candidate);
   }
-  const ranked = rankCandidates(list).filter((c) => c.basis !== "observed_out");
-  return { ranked, skipped };
+  const ranked = rankCandidates(list).filter((c) => request.ignoreKnownSources || c.basis !== "observed_out");
+  return { ranked, skipped: request.ignoreKnownSources ? skipped.filter((s) => s.reason !== "observed_out_of_stock_recently") : skipped };
 }
 
 function clampInt(value: number | undefined, fallback: number, min: number, max: number): number {
@@ -185,6 +185,7 @@ export function planFind(ctx: AppContext, input: PlanFindInput): FindPreview {
     maxWaves: clampInt(input.maxWaves, 4, 1, 8),
     askHold: Boolean(input.askHold),
     ...(only.length > 0 ? { onlySiteIds: only } : {}),
+    ...(input.ignoreKnownSources ? { ignoreKnownSources: true } : {}),
     status: "planned",
     plannedSiteIds: [],
     usedSiteIds: [],

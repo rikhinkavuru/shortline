@@ -1,0 +1,27 @@
+[
+  {
+    "id": "obs_c866cbfbc7d4c76a",
+    "watchId": "amoxicillin-susp",
+    "findRequestId": "fnd_de6b1e45f36a3ee7",
+    "siteId": "demo-me",
+    "dispatchId": "dsp_8afd48783122c8b1",
+    "callId": "call_fMIFph9e84TopidTYraRmQ",
+    "recipientId": "rcp_c584e91b1640e572",
+    "source": "find",
+    "observedAt": "2026-09-10T00:00:44.489690Z",
+    "outcome": "in_stock",
+    "answeredBy": "human",
+    "reachedPharmacy": "yes",
+    "restockExpectation": "",
+    "quantityNote": "No limit.",
+    "evidenceQuote": "plenty in stock",
+    "taskConfidenceScore": 0.92,
+    "taskConfidenceLabel": "high",
+    "doNotCallRequest": false,
+    "holdResponse": "not_asked",
+    "usable": true,
+    "usableReason": "verified",
+    "simulated": false,
+    "transcriptTurns": 8
+  }
+]

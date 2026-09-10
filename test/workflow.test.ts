@@ -391,3 +391,35 @@ describe("demo history", () => {
     expect(last.overall.pHat!).toBeLessThan(first.overall.pHat!);
   });
 });
+
+describe("known sources and re-verification", () => {
+  it("reuses a fresh in-stock sighting, including from a test line, unless the caller asks for a fresh call", async () => {
+    const ctx = makeCtx();
+    setClock(ctx, () => WEDNESDAY_11_LA);
+    ctx.repo.upsertSite({
+      id: "demo-me",
+      name: "Corner Pharmacy (test line)",
+      kind: "independent",
+      phone: "+14155550190",
+      region: "US-CA-SF",
+      timezone: "America/Los_Angeles",
+      source: { kind: "manual", ref: "test" },
+      optOut: false,
+      testLine: true,
+      scenario: "in_stock_human",
+      createdAt: "2026-09-01T00:00:00Z"
+    });
+    const first = planFind(ctx, { watchId: "amoxicillin-susp", region: "US-CA-SF", need: 1, waveSize: 1, maxWaves: 1, onlySiteIds: ["demo-me"] });
+    expect(first.firstWaveCalls).toBe(1);
+    await runFind(ctx, first.request.id, { confirm: true });
+    setClock(ctx, () => new Date(WEDNESDAY_11_LA.getTime() + 2 * 3600000));
+    const second = planFind(ctx, { watchId: "amoxicillin-susp", region: "US-CA-SF", need: 1, waveSize: 1, maxWaves: 1, onlySiteIds: ["demo-me"] });
+    expect(second.knownSources.map((k) => k.siteId)).toEqual(["demo-me"]);
+    expect(second.firstWaveCalls).toBe(0);
+    const fresh = planFind(ctx, { watchId: "amoxicillin-susp", region: "US-CA-SF", need: 1, waveSize: 1, maxWaves: 1, onlySiteIds: ["demo-me"], ignoreKnownSources: true });
+    expect(fresh.knownSources).toHaveLength(0);
+    expect(fresh.candidates.map((c) => c.siteId)).toEqual(["demo-me"]);
+    expect(fresh.candidates[0]?.basis).toBe("observed_in_stock");
+    expect(fresh.firstWaveCalls).toBe(1);
+  });
+});

@@ -86,7 +86,8 @@ export function buildMcpServer(ctx: AppContext): McpServer {
         max_waves: z.number().int().min(1).max(8).optional(),
         ask_hold: z.boolean().optional().describe("Also ask staff to hold one fill for pickup today. A yes is a stated intention, not a reservation."),
         near: z.object({ lat: z.number(), lng: z.number() }).optional(),
-        only_site_ids: z.array(z.string()).optional().describe("Restrict candidates to these site ids, e.g. the operator's own test line.")
+        only_site_ids: z.array(z.string()).optional().describe("Restrict candidates to these site ids, e.g. the operator's own test line."),
+        ignore_known_sources: z.boolean().optional().describe("Dial even sites seen in stock in the last 24 hours instead of reusing the sighting (re-verification).")
       },
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
@@ -108,7 +109,8 @@ export function buildMcpServer(ctx: AppContext): McpServer {
         ...(input.max_waves !== undefined ? { maxWaves: input.max_waves } : {}),
         askHold: Boolean(input.ask_hold),
         ...(input.near ? { near: input.near } : {}),
-        ...(input.only_site_ids && input.only_site_ids.length > 0 ? { onlySiteIds: input.only_site_ids } : {})
+        ...(input.only_site_ids && input.only_site_ids.length > 0 ? { onlySiteIds: input.only_site_ids } : {}),
+        ...(input.ignore_known_sources ? { ignoreKnownSources: true } : {})
       });
       return text({
         find_request_id: preview.request.id,

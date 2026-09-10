@@ -79,7 +79,7 @@ const HELP = `shortline — phone calls as a statistical sensor network for drug
   shortline serve                                  dashboard + webhook receiver + recovery poller
   shortline sweep --watch ID [--week 2026-W37] [--wait] [--force]
   shortline estimate --watch ID [--week 2026-W37]
-  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window (dry-run only)] [--only-site ID[,ID]] [--yes]
+  shortline find --watch ID --region US-CA-SF [--need 2] [--wave 3] [--max-waves 4] [--ask-hold] [--ignore-window (dry-run only)] [--only-site ID[,ID]] [--fresh (dial even sites seen in stock in the last 24h)] [--yes]
   shortline reconcile                              replay ambiguous submissions, drain the webhook inbox
   shortline sites [--region CODE]
   shortline site add --id ID --name NAME --kind independent --phone +1... --region CODE --tz America/Los_Angeles [--lat --lng] [--test-line]
@@ -200,6 +200,7 @@ async function main(): Promise<void> {
         maxWaves: num(flags, "max-waves", 4),
         askHold: Boolean(flags["ask-hold"]),
         ignoreWindow: Boolean(flags["ignore-window"]),
+        ignoreKnownSources: Boolean(flags.fresh),
         ...(typeof flags["only-site"] === "string" ? { onlySiteIds: flags["only-site"].split(",").map((s) => s.trim()).filter(Boolean) } : {})
       });
       process.stderr.write(`${modeLine}\n`);
