@@ -16,7 +16,7 @@ export function TopBar({ wordmark, tagline, nav, rightHtml }) {
   return `<header class="topbar">
     <div class="brand">
       <a class="wordmark" id="app-wordmark" href="#overview">${icon("radio", { size: 18, cls: "brand-icon" })}<span>${esc(wordmark)}</span></a>
-      <p class="tagline" id="app-tagline">${esc(tagline)}</p>
+      <p class="tagline" id="app-tagline" title="${esc(tagline)}">${esc(tagline)}</p>
     </div>
     <nav class="nav-pills" aria-label="Sections">${links}</nav>
     <div class="topbar-right" id="topbar-controls">${rightHtml}</div>
@@ -24,9 +24,9 @@ export function TopBar({ wordmark, tagline, nav, rightHtml }) {
 }
 
 export function SideRail({ items }) {
-  return `<nav class="rail" aria-label="Section shortcuts">${items
+  return `<nav class="rail" aria-label="Section shortcuts"><div class="rail-inner">${items
     .map((it) => `<a class="rail-btn" href="#${esc(it.target)}" data-nav="${esc(it.target)}" aria-label="${esc(it.label)}" data-tooltip="${esc(it.label)}">${icon(it.icon, { size: 18 })}</a>`)
-    .join("")}</nav>`;
+    .join("")}</div></nav>`;
 }
 
 export function SectionCard({ id, title, icon: name, subtitle = "", headActionsHtml = "", bodyHtml, cls = "" }) {
@@ -43,11 +43,12 @@ export function SectionCard({ id, title, icon: name, subtitle = "", headActionsH
   </section>`;
 }
 
-export function MetricTile({ id, label, valueHtml, sub = "", icon: name = "", tone = "", tooltipHtml = "", title = "" }) {
+/** `srJoin` is visually hidden text placed between label and value so the DOM text reads as one sentence. */
+export function MetricTile({ id, label, valueHtml, sub = "", subHtml = "", icon: name = "", tone = "", tooltipHtml = "", title = "", srJoin = "" }) {
   return `<div class="metric ${esc(tone)}" id="${esc(id)}"${title ? ` title="${esc(title)}"` : ""}>
-    <div class="metric-k">${name ? icon(name, { size: 14 }) : ""}<span>${esc(label)}</span>${tooltipHtml}</div>
+    <div class="metric-k">${name ? icon(name, { size: 14 }) : ""}<span>${esc(label)}</span>${srJoin ? `<span class="sr-only">${esc(srJoin)}</span>` : ""}${tooltipHtml}</div>
     <div class="metric-v">${valueHtml}</div>
-    ${sub ? `<div class="metric-s">${esc(sub)}</div>` : ""}
+    ${subHtml ? `<div class="metric-s">${subHtml}</div>` : sub ? `<div class="metric-s">${esc(sub)}</div>` : ""}
   </div>`;
 }
 
@@ -91,7 +92,7 @@ const SIGNAL_ICON = { available: "check-circle", strained: "alert-triangle", sho
 
 export function SignalChip(signal, { suffix = "", id = "", large = false } = {}) {
   const s = SIGNAL_ICON[signal] ? signal : "insufficient_data";
-  return `<span class="chip signal ${esc(s)}${large ? " lg" : ""}"${id ? ` id="${esc(id)}"` : ""}>${icon(SIGNAL_ICON[s], { size: large ? 15 : 13 })}<span>${esc(humanSignal(signal))}</span>${suffix ? `<span class="chip-suffix">${esc(suffix)}</span>` : ""}</span>`;
+  return `<span class="chip signal ${esc(s)}${large ? " lg" : ""}"${id ? ` id="${esc(id)}"` : ""}>${icon(SIGNAL_ICON[s], { size: large ? 15 : 13 })}<span>${esc(humanSignal(signal))}</span>${suffix ? `<span class="chip-suffix"><span class="chip-sep" aria-hidden="true">·</span>${esc(suffix)}</span>` : ""}</span>`;
 }
 
 export function Tag(text, tone = "") {
@@ -117,7 +118,7 @@ export function IconButton({ id = "", icon: name, label, attrs = "", cls = "" })
 const NOTICE_ICON = { info: "info", success: "check-circle", warn: "alert-triangle", error: "alert-circle" };
 
 export function Notice({ id, level = "info", message, atText }) {
-  return `<div class="notice ${esc(level)}" role="${level === "error" || level === "warn" ? "alert" : "status"}" data-notice="${esc(id)}">
+  return `<div class="notice ${esc(level)}" data-notice="${esc(id)}">
     <span class="notice-icon">${icon(NOTICE_ICON[level] ?? "info", { size: 16 })}</span>
     <div class="notice-body"><p class="notice-msg">${esc(message)}</p><time class="notice-at">${esc(atText)}</time></div>
     ${IconButton({ icon: "x", label: "Dismiss notice", attrs: `data-dismiss="${esc(id)}"`, cls: "notice-close" })}
@@ -126,29 +127,30 @@ export function Notice({ id, level = "info", message, atText }) {
 
 /** Table with data-label attributes so rows can stack on narrow screens. */
 export function DataTable({ id, columns, rows, cls = "", emptyHtml = "", caption = "" }) {
-  const head = columns.map((c) => `<th scope="col"${c.align ? ` class="${esc(c.align)}"` : ""}${c.title ? ` title="${esc(c.title)}"` : ""}>${c.sr ? `<span class="sr-only">${esc(c.label)}</span>` : esc(c.label)}</th>`).join("");
+  // Explicit table roles survive the display:block stacking used on narrow screens.
+  const head = columns.map((c) => `<th scope="col" role="columnheader"${c.align ? ` class="${esc(c.align)}"` : ""}${c.title ? ` title="${esc(c.title)}"` : ""}>${c.sr ? `<span class="sr-only">${esc(c.label)}</span>` : esc(c.label)}</th>`).join("");
   const body = rows.length
     ? rows
-        .map((r) => `<tr${r.cls ? ` class="${esc(r.cls)}"` : ""}>${r.cells.map((cell, i) => `<td data-label="${esc(columns[i]?.label ?? "")}"${columns[i]?.align ? ` class="${esc(columns[i].align)}"` : ""}>${cell}</td>`).join("")}</tr>`)
+        .map((r) => `<tr role="row"${r.cls ? ` class="${esc(r.cls)}"` : ""}>${r.cells.map((cell, i) => `<td role="cell" data-label="${esc(columns[i]?.label ?? "")}"${columns[i]?.align ? ` class="${esc(columns[i].align)}"` : ""}>${cell}</td>`).join("")}</tr>`)
         .join("")
-    : `<tr class="empty-row"><td colspan="${columns.length}">${emptyHtml}</td></tr>`;
-  return `<table class="table ${esc(cls)}" id="${esc(id)}">${caption ? `<caption class="sr-only">${esc(caption)}</caption>` : ""}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+    : `<tr role="row" class="empty-row"><td role="cell" colspan="${columns.length}">${emptyHtml}</td></tr>`;
+  return `<table class="table ${esc(cls)}" id="${esc(id)}" role="table">${caption ? `<caption class="sr-only">${esc(caption)}</caption>` : ""}<thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${body}</tbody></table>`;
 }
 
 const FEED_ICON = { dispatch: "send", observation: "phone", call_event: "message-square", estimate: "bar-chart", find: "search", sweep: "radar", notice: "bell" };
 
-export function ActivityFeedItem({ type, timeText, timeTitle, primaryHtml, detailsHtml = "", tone = "" }) {
+export function ActivityFeedItem({ type, timeText, timeTitle, timeIso = "", primaryHtml, detailsHtml = "", tone = "" }) {
   return `<li class="feed-item ${esc(type)} ${esc(tone)}">
-    <time class="feed-time" title="${esc(timeTitle)}">${esc(timeText)}</time>
+    <time class="feed-time"${timeIso ? ` datetime="${esc(timeIso)}"` : ""} title="${esc(timeTitle)}">${esc(timeText)}<span class="sr-only"> ${esc(timeTitle)}</span></time>
     <span class="feed-icon" aria-hidden="true">${icon(FEED_ICON[type] ?? "activity", { size: 14 })}</span>
     <div class="feed-main"><div class="feed-primary">${primaryHtml}</div>${detailsHtml ? `<div class="feed-details">${detailsHtml}</div>` : ""}</div>
   </li>`;
 }
 
-/** Info tooltip: a small button that reveals a bubble on hover and focus. */
-export function Tooltip({ text, label = "More information" }) {
-  const id = `tip-${++tipSeq}`;
-  return `<span class="tip"><button type="button" class="tip-trigger" aria-label="${esc(label)}" aria-describedby="${id}">${icon("info", { size: 13 })}</button><span class="tip-bubble" role="tooltip" id="${id}">${esc(text)}</span></span>`;
+/** Info tooltip: a small button that reveals a bubble on hover, focus, or tap (toggle wired in app.js). */
+export function Tooltip({ text, label = "More information", id = "" }) {
+  id = id || `tip-${++tipSeq}`;
+  return `<span class="tip"><button type="button" class="tip-trigger" id="${id}-trigger" aria-label="${esc(label)}" aria-describedby="${id}" aria-expanded="false">${icon("info", { size: 13 })}</button><span class="tip-bubble" role="tooltip" id="${id}">${esc(text)}</span></span>`;
 }
 
 export function EmptyState({ icon: name = "circle-dashed", title, hint = "", compact = false }) {
@@ -160,12 +162,12 @@ export function Skeleton(lines = 3) {
 }
 
 export function TranscriptDialog() {
-  return `<dialog class="dialog" id="transcript-dialog" aria-labelledby="transcript-title">
+  return `<dialog class="dialog" id="transcript-dialog" aria-labelledby="transcript-title" aria-describedby="transcript-sub">
     <div class="dialog-head">
       <div><h3 class="dialog-title" id="transcript-title">Transcript</h3><p class="dialog-sub" id="transcript-sub"></p></div>
       ${IconButton({ id: "transcript-close", icon: "x", label: "Close transcript" })}
     </div>
-    <div class="transcript" id="transcript-turns"></div>
+    <div class="transcript" id="transcript-turns" tabindex="0" role="region" aria-label="Transcript" aria-live="polite"></div>
   </dialog>`;
 }
 

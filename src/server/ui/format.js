@@ -85,7 +85,7 @@ function fmt(iso, opts) {
   }
 }
 
-export const clock = (iso) => fmt(iso, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+export const clock = (iso) => fmt(iso, { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
 export const fmtTime = (iso) => (iso ? fmt(iso, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—");
 export const fmtDateTime = (iso) => (iso ? fmt(iso, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" }) : "");
 

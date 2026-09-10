@@ -3,106 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Shortline</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23ff643f%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M4.9 19.1C1 15.2 1 8.8 4.9 4.9%27/%3E%3Cpath d=%27M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27 fill=%27%23ff643f%27/%3E%3Cpath d=%27M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5%27/%3E%3Cpath d=%27M19.1 4.9C23 8.8 23 15.1 19.1 19%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-<header class="topbar">
-  <div class="brand">
-    <span class="brand-mark" aria-hidden="true"></span>
-    <h1>Shortline</h1>
-    <span class="tagline">phone calls as a sensor network for drug shortages</span>
-  </div>
-  <div class="topbar-right">
-    <label class="watch-select">
-      <span>Watching</span>
-      <select id="watch-select" aria-label="Watched product"></select>
-    </label>
-    <label class="check topbar-check" id="find-ignore-wrap" title="Dry-run only: pretend it is business hours at every site"><input id="find-ignore" type="checkbox"> Ignore calling hours</label>
-    <span id="mode-badge" class="badge">…</span>
-    <span id="live-dot" class="live-dot" title="live updates"></span>
-  </div>
-</header>
-
-<main class="grid">
-  <section class="panel panel-index" aria-labelledby="index-title">
-    <div class="panel-head">
-      <h2 id="index-title">Availability index</h2>
-      <span id="signal-chip" class="chip">no data</span>
-    </div>
-    <p class="panel-sub" id="index-sub">Share of pharmacies with the product in stock, estimated from a rotating stratified sample. Band is a 95% interval.</p>
-    <div id="chart" class="chart" role="img" aria-label="Weekly availability estimate with confidence band"></div>
-    <div class="index-stats" id="index-stats"></div>
-    <div class="table-scroll">
-    <table class="strata" id="strata">
-      <thead><tr><th>Stratum</th><th>frame</th><th>asked</th><th>usable</th><th>available</th><th>estimate</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    </div>
-  </section>
-
-  <section class="panel panel-sweep" aria-labelledby="sweep-title">
-    <div class="panel-head">
-      <h2 id="sweep-title">This week's sweep</h2>
-      <button id="run-sweep" class="btn">Run sweep now</button>
-    </div>
-    <div id="sweep-summary" class="sweep-summary"></div>
-    <p id="sweep-hint" class="panel-sub" hidden></p>
-    <ol id="feed" class="feed" aria-live="polite"></ol>
-  </section>
-
-  <section class="panel panel-find" aria-labelledby="find-title">
-    <div class="panel-head">
-      <h2 id="find-title">Find it now</h2>
-      <span class="chip chip-muted">sourcing waves</span>
-    </div>
-    <form id="find-form" class="find-form">
-      <label>Region
-        <select id="find-region"></select>
-      </label>
-      <label>Sources needed
-        <input id="find-need" type="number" min="1" max="6" value="2">
-      </label>
-      <label>Wave size
-        <input id="find-wave" type="number" min="1" max="6" value="3">
-      </label>
-      <label>Only these sites <small>(optional, comma-separated ids)</small>
-        <input id="find-only" type="text" placeholder="demo-me">
-      </label>
-      <label class="check"><input id="find-hold" type="checkbox"> Ask to hold one fill for pickup today</label>
-      <button class="btn" type="submit">Plan</button>
-    </form>
-    <div id="find-preview" class="find-preview" hidden></div>
-    <div id="find-board" class="find-board"></div>
-  </section>
-
-  <section class="panel panel-sites" aria-labelledby="sites-title">
-    <div class="panel-head">
-      <h2 id="sites-title">Sites &amp; courtesy</h2>
-      <span class="chip chip-muted" id="sites-count"></span>
-    </div>
-    <p class="panel-sub">Numbers are masked everywhere. A site is asked about a product at most once per cooldown; anyone who says "don't call" is opted out for good.</p>
-    <table class="sites" id="sites">
-      <thead><tr><th>Site</th><th>Stratum</th><th>Number</th><th>Last</th><th title="Shortline calls to this site in the last 30 days">Calls 30d</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-</main>
-
-<dialog id="transcript-dialog">
-  <div class="dialog-head">
-    <h3 id="transcript-title">Transcript</h3>
-    <button class="btn btn-ghost" id="transcript-close">Close</button>
-  </div>
-  <div id="transcript-body" class="transcript"></div>
-</dialog>
-
-<footer class="foot">
-  <span>Built on <a href="https://www.heycall-e.com/" rel="noopener">CALL-E</a>. Every call discloses that it is automated. Observations from dry-run mode are marked simulated.</span>
-</footer>
+<body data-state="loading">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="notices" class="notices" aria-live="polite" aria-atomic="false"></div>
+<div id="root" class="page">
+  <div class="boot" role="status">Loading Shortline…</div>
+  <noscript><p class="boot">Shortline needs JavaScript to render the dashboard.</p></noscript>
+</div>
 <script src="/app.js" type="module"></script>
 </body>
 </html>

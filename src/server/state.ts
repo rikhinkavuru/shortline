@@ -22,6 +22,7 @@ export function snapshotState(ctx: AppContext, watchId: string | null): Record<s
       phoneMasked: maskPhone(s.phone),
       optOut: s.optOut,
       optOutReason: s.optOutReason ?? null,
+      testLine: Boolean(s.testLine),
       lastOutcome: last?.outcome ?? null,
       lastObservedAt: last?.observedAt ?? null,
       callsThisMonth,
