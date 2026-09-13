@@ -27,14 +27,12 @@ const state = {
 };
 
 const NAV = [
-  { target: "overview", label: "Overview", icon: "layout-dashboard" },
-  { target: "weekly-sweep-panel", label: "Sweep", icon: "radar" },
-  { target: "find-now-panel", label: "Find now", icon: "search" },
+  { target: "overview", label: "Availability", icon: "activity" },
+  { target: "weekly-sweep-panel", label: "This week\u2019s sweep", icon: "radar", count: true },
+  { target: "find-now-panel", label: "Find it now", icon: "search" },
   { target: "sites-courtesy-panel", label: "Sites", icon: "building" },
-  // Rendered as a pill only below 1024px, where the icon rail is hidden.
-  { target: "help-panel", label: "Help", icon: "help-circle" }
+  { target: "help-panel", label: "How it works", icon: "help-circle" }
 ];
-const RAIL = NAV;
 
 /* ------------------------------------------------------------------ API */
 
@@ -153,14 +151,24 @@ function preserveFocus(fn) {
 
 function topBarControls() {
   return `
-    <div class="live" id="live-updates-indicator" role="status" data-state="offline"><span class="live-dot" aria-hidden="true"></span><span class="live-text">Updates offline</span></div>
-    <span class="mode-badge" id="mode-badge" data-mode="">${icon("flask", { size: 14 })}<span>DRY RUN · no calls</span></span>
-    <div class="watch-wrap">
-      <label class="field-label" for="watch-selector">Watch</label>
-      <select class="select" id="watch-selector"></select>
-      <span class="tag warn" id="watch-paused" hidden>${icon("pause", { size: 11 })}Paused</span>
-    </div>
-    <div class="ignore-slot" id="ignore-slot"></div>`;
+    <div class="ignore-slot" id="ignore-slot"></div>
+    <span class="mode-badge" id="mode-badge" data-mode="">${icon("flask", { size: 13 })}<span>DRY RUN · no calls</span></span>
+    <div class="live" id="live-updates-indicator" role="status" data-state="offline"><span class="live-dot" aria-hidden="true"></span><span class="live-text">Updates offline</span></div>`;
+}
+
+/** The watch list in the sidebar: one row per watched product, coloured dot, paused marked in text. */
+function watchList() {
+  return `<div class="watch-list" id="watch-list">
+    <label class="sr-only" for="watch-selector">Watched product</label>
+    <select class="select sr-only" id="watch-selector"></select>
+    <div class="watch-items" id="watch-items"></div>
+    <span class="tag warn" id="watch-paused" hidden>Paused</span>
+  </div>`;
+}
+
+function sidebarFoot() {
+  return `<a class="side-link" href="#help-panel" data-nav="help-panel">${icon("help-circle", { size: 16 })}<span>How it works</span></a>
+    <p class="side-note">Built on <a href="https://www.heycall-e.com/" rel="noopener">CALL-E</a>. Every call says it is automated.</p>`;
 }
 
 function ignoreSwitch() {
@@ -170,46 +178,23 @@ function ignoreSwitch() {
 function mainMarkup() {
   return `
     <div class="overview" id="overview">
-      <div>
-        <h1 class="greeting" id="greeting">${C.Skeleton(1)}</h1>
-        <p class="status-line" id="status-line"></p>
-      </div>
       <div class="sample-banner" id="sample-banner" hidden></div>
-    </div>
-    <div class="grid">
-      ${C.SectionCard({
-        id: "availability-index-panel",
-        title: "Availability Index",
-        icon: "activity",
-        cls: "span-all",
-        headActionsHtml: `<div class="signal-slot" id="signal-slot"></div>`,
-        bodyHtml: `
-          <div class="index-top">
-            <div class="index-chart-col">
-              <p class="index-sub" id="index-sub"></p>
-              <div class="chart" id="availability-chart">${C.Skeleton(3)}</div>
-            </div>
-            <div class="metrics" id="availability-metrics">${C.Skeleton(2)}</div>
+      <section class="index" id="availability-index-panel" aria-labelledby="availability-index-title">
+        <div class="index-head">
+          <div>
+            <h2 class="section-title" id="availability-index-title">Availability index</h2>
+            <p class="index-sub" id="index-sub"></p>
           </div>
-          <div class="table-scroll" id="strata-table-scroll" tabindex="0" role="region" aria-label="Strata by region and kind; scrolls sideways">${C.Skeleton(3)}</div>
-          <p class="table-note" id="strata-note" hidden></p>`
-      })}
-      ${C.SectionCard({
-        id: "weekly-sweep-panel",
-        title: "This Week’s Sweep",
-        icon: "radar",
-        headActionsHtml: C.PrimaryButton({ id: "run-sweep-now", label: "Run sweep now", icon: "play" }),
-        bodyHtml: `
-          <div class="pills" id="sweep-pills">${C.Skeleton(1)}</div>
-          <p class="hint" id="calling-window-hint" hidden></p>
-          <div class="feed-head"><span>Activity</span><span class="feed-zone" id="feed-zone"></span></div>
-          <p class="sr-only" id="feed-announcer" role="status"></p>
-          <div class="feed-scroll" tabindex="0" role="region" aria-label="Activity, newest first"><ol class="feed" id="sweep-feed">${C.Skeleton(3)}</ol></div>`
-      })}
+          <div class="signal-slot" id="signal-slot"></div>
+        </div>
+        <div class="metrics" id="availability-metrics">${C.Skeleton(2)}</div>
+        <div class="chart" id="availability-chart">${C.Skeleton(3)}</div>
+        <div class="table-scroll" id="strata-table-scroll" tabindex="0" role="region" aria-label="Strata by region and kind; scrolls sideways">${C.Skeleton(3)}</div>
+        <p class="table-note" id="strata-note" hidden></p>
+      </section>
       ${C.SectionCard({
         id: "find-now-panel",
-        title: "Find It Now",
-        icon: "search",
+        title: "Find it now",
         subtitle: "Source a fill in waves: known sources first, then the closest eligible pharmacies.",
         bodyHtml: `
           <form class="find-form" id="find-now-form" novalidate>
@@ -219,41 +204,67 @@ function mainMarkup() {
             <div class="field field-wide"><label class="field-label" for="find-only-sites">Only these sites <span class="muted">(optional, comma-separated site ids)</span></label><input class="input mono" id="find-only-sites" type="text" placeholder="eb-ind-3, sf-chn-1" autocomplete="off"></div>
             <label class="check field-wide" for="find-hold-today"><input type="checkbox" id="find-hold-today"><span>Ask to hold one fill for pickup today</span></label>
             <label class="check field-wide" for="find-fresh"><input type="checkbox" id="find-fresh"><span>Call even if seen in stock recently <span class="muted">(re-verify instead of reusing a sighting)</span></span></label>
-            <div class="form-actions field-wide">${C.SecondaryButton({ id: "plan-find", label: "Plan calls", icon: "target", type: "submit" })}</div>
+            <div class="form-actions field-wide">${C.SecondaryButton({ id: "plan-find", label: "Plan calls", type: "submit" })}</div>
           </form>
           <div class="preview" id="find-plan-preview" hidden></div>
           <div class="requests" id="find-request-list">${C.Skeleton(2)}</div>`
       })}
       ${C.SectionCard({
         id: "sites-courtesy-panel",
-        title: "Sites & Courtesy",
-        icon: "shield-check",
-        cls: "span-all",
+        title: "Sites and courtesy",
         headActionsHtml: `<p class="sites-count" id="sites-count"></p>`,
         subtitle: "Numbers are masked everywhere. A site hears about a product at most once per cooldown; anyone who asks not to be called is out for good.",
         bodyHtml: `<div class="sites-wrap" id="sites-wrap">${C.Skeleton(4)}</div>`
       })}
-      ${C.SectionCard({
-        id: "help-panel",
-        title: "How Shortline works",
-        icon: "help-circle",
-        cls: "span-all help",
-        bodyHtml: `<div class="help-grid" id="help-body"></div>`
-      })}
+      ${C.SectionCard({ id: "help-panel", title: "How Shortline works", cls: "help", bodyHtml: `<div class="help-grid" id="help-body"></div>` })}
     </div>`;
 }
 
+function railMarkup() {
+  return `
+    <section class="card rail-card" id="weekly-sweep-panel" aria-labelledby="weekly-sweep-title">
+      <div class="card-head">
+        <div class="card-title-wrap"><h2 class="card-title" id="weekly-sweep-title">This week\u2019s sweep</h2></div>
+        <div class="card-actions">${C.PrimaryButton({ id: "run-sweep-now", label: "Run sweep", icon: "play" })}</div>
+      </div>
+      <div class="card-body">
+        <div class="stats" id="sweep-pills">${C.Skeleton(1)}</div>
+        <p class="hint" id="calling-window-hint" hidden></p>
+      </div>
+    </section>
+    <section class="card rail-card feed-card" aria-labelledby="activity-title">
+      <div class="card-head">
+        <div class="card-title-wrap"><h2 class="card-title" id="activity-title">Activity</h2></div>
+        <span class="feed-zone" id="feed-zone"></span>
+      </div>
+      <div class="card-body">
+        <p class="sr-only" id="feed-announcer" role="status"></p>
+        <div class="feed-scroll" tabindex="0" role="region" aria-label="Activity, newest first"><ol class="feed" id="sweep-feed">${C.Skeleton(3)}</ol></div>
+      </div>
+    </section>`;
+}
+
 function footer() {
-  return `<footer class="foot"><span>Built on <a href="https://www.heycall-e.com/" rel="noopener">CALL-E</a>. Every call discloses that it is automated. Observations from dry-run mode are marked simulated.</span></footer>`;
+  return `<footer class="foot"><span>Observations from dry-run mode are marked simulated. Numbers are masked everywhere.</span></footer>`;
 }
 
 function mountShell() {
   const root = $("#root");
   root.innerHTML =
     C.AppShell({
-      topBarHtml: C.TopBar({ wordmark: "Shortline", tagline: "Availability intelligence, with calls made courteously.", nav: NAV, rightHtml: topBarControls() }),
-      railHtml: C.SideRail({ items: RAIL }),
+      sidebarHtml: C.Sidebar({
+        wordmark: "Shortline",
+        tagline: "Availability, verified by phone",
+        nav: NAV,
+        watchHtml: watchList(),
+        footHtml: sidebarFoot()
+      }),
+      topBarHtml: C.PageBar({
+        titleHtml: `<h1 class="greeting" id="greeting">${C.Skeleton(1)}</h1><p class="status-line" id="status-line"></p>`,
+        rightHtml: topBarControls()
+      }),
       mainHtml: mainMarkup(),
+      railHtml: railMarkup(),
       footerHtml: footer()
     }) + C.TranscriptDialog();
 }
@@ -320,17 +331,44 @@ function renderTop(d) {
   badge.innerHTML = `${icon(live ? "phone" : "flask", { size: 14 })}<span>${live ? "LIVE · real calls" : "DRY RUN · no calls"}</span>`;
   badge.title = live ? "Live mode: real calls are placed" : "Dry run: calls are simulated, nobody is dialled";
 
+  // The watch list is the sidebar's data source: one row per product. The select stays in the
+  // DOM (visually hidden) so the control keeps a native label, value, and change event.
   const sel = $("#watch-selector");
-  const options = (d.watches ?? []).map((w) => `<option value="${esc(w.id)}"${w.id === d.watch?.id ? " selected" : ""}>${esc(F.productLabel(w.product))}${w.status === "paused" ? " · Paused" : ""}</option>`).join("");
+  const watches = d.watches ?? [];
+  const options = watches.map((w) => `<option value="${esc(w.id)}"${w.id === d.watch?.id ? " selected" : ""}>${esc(F.productLabel(w.product))}${w.status === "paused" ? " · Paused" : ""}</option>`).join("");
   if (sel.dataset.sig !== options) {
     sel.innerHTML = options || `<option value="">No watches</option>`;
     sel.dataset.sig = options;
   }
   if (d.watch?.id) sel.value = d.watch.id;
+  const items = watches
+    .map((w, i) => {
+      const active = w.id === d.watch?.id;
+      const paused = w.status === "paused";
+      return `<button type="button" class="watch-item${active ? " is-active" : ""}" data-watch="${esc(w.id)}"${active ? ' aria-current="true"' : ""}>
+        <span class="watch-dot" data-hue="${i % 4}" aria-hidden="true"></span>
+        <span class="watch-name">${esc(F.productLabel(w.product))}</span>
+        ${paused ? `<span class="watch-state">Paused</span>` : ""}
+      </button>`;
+    })
+    .join("");
+  const host = $("#watch-items");
+  if (host.dataset.sig !== items) {
+    host.innerHTML = items || `<p class="side-empty">No watches</p>`;
+    host.dataset.sig = items;
+  }
   const paused = d.watch?.status === "paused";
-  $("#watch-paused").hidden = !paused;
+  $("#watch-paused").hidden = true;
   if (paused) sel.setAttribute("aria-describedby", "watch-paused");
   else sel.removeAttribute("aria-describedby");
+
+  const count = $('[data-count="weekly-sweep-panel"]');
+  if (count) {
+    const sweep = d.sweep;
+    const pending = sweep ? Math.max(0, sweep.planned - sweep.verified) : 0;
+    count.textContent = pending > 0 ? String(pending) : "";
+    count.hidden = pending === 0;
+  }
 
   const slot = $("#ignore-slot");
   if (live) {
@@ -524,8 +562,8 @@ function renderSweep(d) {
       C.StatusPill({ label: "in flight", value: s.inFlight, tone: s.inFlight ? "blue" : "", muted: !s.inFlight }),
       C.StatusPill({ label: "needs human", value: s.needsHuman, tone: s.needsHuman ? "danger" : "", muted: !s.needsHuman }),
       C.StatusPill({ label: "status", value: s.status, tone: "blue" }),
-      `<span class="pill${undersampled.length ? " warn" : " muted"}" title="${esc(undersampled.join(", ") || "every stratum met its panel")}"><span class="pill-k">undersampled strata</span><b class="pill-v">${esc(undersampled.length)}</b></span>`,
-      undersampled.length ? `<span class="pills-note" id="undersampled-strata"><b>Undersampled:</b> ${esc(undersampled.join(", "))}</span>` : ""
+      `<div class="stat${undersampled.length ? " warn" : " muted"}" title="${esc(undersampled.join(", ") || "every stratum met its panel")}"><span class="stat-k">undersampled strata</span><b class="stat-v">${esc(undersampled.length)}</b></div>`,
+      undersampled.length ? `<p class="stat-note" id="undersampled-strata">${undersampled.length === 1 ? "One stratum could not fill its panel" : `${esc(undersampled.length)} strata could not fill their panels`} this week: ${esc(undersampled.map((u) => u.replace("|", " · ")).join(", "))}.</p>` : ""
     ].join("");
   } else {
     pills.innerHTML = C.EmptyState({ icon: "radar", title: `No sweep planned for ${d.week} yet`, hint: "Run sweep now plans a rotating panel per stratum and dials inside each site’s calling window.", compact: true });
@@ -997,7 +1035,7 @@ function connect() {
 
 function wireNav() {
   const links = [...document.querySelectorAll("[data-nav]")];
-  const targets = RAIL.map((n) => document.getElementById(n.target)).filter(Boolean);
+  const targets = NAV.map((n) => document.getElementById(n.target)).filter(Boolean);
   const setActive = (id) => {
     for (const a of links) {
       if (a.dataset.nav === id) a.setAttribute("aria-current", "true");
@@ -1028,6 +1066,16 @@ function wireNav() {
 /* --------------------------------------------------------------- Wire */
 
 function wire() {
+  // Clicking a sidebar watch drives the same native select, so one code path handles both.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest?.("[data-watch]");
+    if (!btn) return;
+    const sel = $("#watch-selector");
+    if (!sel || sel.value === btn.dataset.watch) return;
+    sel.value = btn.dataset.watch;
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
   $("#watch-selector").addEventListener(
     "change",
     guarded(null, async (e) => {

@@ -7,34 +7,57 @@ import { esc, humanOutcome, humanReason, humanSignal } from "/ui/format.js";
 
 let tipSeq = 0;
 
-export function AppShell({ topBarHtml, railHtml, mainHtml, footerHtml = "" }) {
-  return `<div class="shell" id="app-shell">${topBarHtml}<div class="shell-body">${railHtml}<main class="main" id="main" tabindex="-1">${mainHtml}</main></div>${footerHtml}</div>`;
+export function AppShell({ sidebarHtml, topBarHtml, mainHtml, railHtml, footerHtml = "" }) {
+  return `<div class="shell" id="app-shell">
+    ${sidebarHtml}
+    <div class="workspace">
+      ${topBarHtml}
+      <div class="work-body">
+        <main class="main" id="main" tabindex="-1">${mainHtml}</main>
+        <aside class="rail" aria-label="Live activity">${railHtml}</aside>
+      </div>
+      ${footerHtml}
+    </div>
+  </div>`;
 }
 
-export function TopBar({ wordmark, tagline, nav, rightHtml }) {
-  const links = nav.map((n) => `<a class="nav-pill" href="#${esc(n.target)}" data-nav="${esc(n.target)}">${esc(n.label)}</a>`).join("");
-  return `<header class="topbar">
-    <div class="brand">
-      <a class="wordmark" id="app-wordmark" href="#overview">${icon("radio", { size: 18, cls: "brand-icon" })}<span>${esc(wordmark)}</span></a>
-      <p class="tagline" id="app-tagline" title="${esc(tagline)}">${esc(tagline)}</p>
+export function Sidebar({ wordmark, tagline, nav, watchHtml, footHtml }) {
+  const links = nav
+    .map(
+      (n) => `<a class="nav-item" href="#${esc(n.target)}" data-nav="${esc(n.target)}">
+        <span class="nav-icon" aria-hidden="true">${icon(n.icon, { size: 17 })}</span>
+        <span class="nav-label">${esc(n.label)}</span>
+        ${n.count ? `<span class="nav-count" data-count="${esc(n.target)}"></span>` : ""}
+      </a>`
+    )
+    .join("");
+  return `<div class="sidebar">
+    <a class="brand" id="app-wordmark" href="#overview">
+      <span class="brand-mark" aria-hidden="true">${icon("radio", { size: 17 })}</span>
+      <span class="brand-text"><b>${esc(wordmark)}</b><span class="tagline" id="app-tagline">${esc(tagline)}</span></span>
+    </a>
+    <nav class="nav" aria-label="Sections">${links}</nav>
+    <div class="side-block">
+      <p class="side-label">Watching</p>
+      ${watchHtml}
     </div>
-    <nav class="nav-pills" aria-label="Sections">${links}</nav>
+    <div class="side-foot">${footHtml}</div>
+  </div>`;
+}
+
+export function PageBar({ titleHtml, rightHtml }) {
+  return `<header class="topbar">
+    <div class="page-title">${titleHtml}</div>
     <div class="topbar-right" id="topbar-controls">${rightHtml}</div>
   </header>`;
 }
 
-export function SideRail({ items }) {
-  return `<nav class="rail" aria-label="Section shortcuts"><div class="rail-inner">${items
-    .map((it) => `<a class="rail-btn" href="#${esc(it.target)}" data-nav="${esc(it.target)}" aria-label="${esc(it.label)}" data-tooltip="${esc(it.label)}">${icon(it.icon, { size: 18 })}</a>`)
-    .join("")}</div></nav>`;
-}
-
-export function SectionCard({ id, title, icon: name, subtitle = "", headActionsHtml = "", bodyHtml, cls = "" }) {
+export function SectionCard({ id, title, icon: name = "", subtitle = "", headActionsHtml = "", bodyHtml, cls = "" }) {
   const titleId = `${id}-title`;
   return `<section class="card ${esc(cls)}" id="${esc(id)}" aria-labelledby="${titleId}">
     <div class="card-head">
       <div class="card-title-wrap">
-        <h2 class="card-title" id="${titleId}">${name ? icon(name, { size: 16, cls: "card-icon" }) : ""}<span>${esc(title)}</span></h2>
+        <h2 class="card-title" id="${titleId}">${esc(title)}</h2>
         ${subtitle ? `<p class="card-sub">${esc(subtitle)}</p>` : ""}
       </div>
       ${headActionsHtml ? `<div class="card-actions">${headActionsHtml}</div>` : ""}
@@ -46,14 +69,14 @@ export function SectionCard({ id, title, icon: name, subtitle = "", headActionsH
 /** `srJoin` is visually hidden text placed between label and value so the DOM text reads as one sentence. */
 export function MetricTile({ id, label, valueHtml, sub = "", subHtml = "", icon: name = "", tone = "", tooltipHtml = "", title = "", srJoin = "" }) {
   return `<div class="metric ${esc(tone)}" id="${esc(id)}"${title ? ` title="${esc(title)}"` : ""}>
-    <div class="metric-k">${name ? icon(name, { size: 14 }) : ""}<span>${esc(label)}</span>${srJoin ? `<span class="sr-only">${esc(srJoin)}</span>` : ""}${tooltipHtml}</div>
+    <div class="metric-k"><span>${esc(label)}</span>${srJoin ? `<span class="sr-only">${esc(srJoin)}</span>` : ""}${tooltipHtml}</div>
     <div class="metric-v">${valueHtml}</div>
     ${subHtml ? `<div class="metric-s">${subHtml}</div>` : sub ? `<div class="metric-s">${esc(sub)}</div>` : ""}
   </div>`;
 }
 
 export function StatusPill({ label, value, tone = "", muted = false }) {
-  return `<span class="pill ${esc(tone)}${muted ? " muted" : ""}"><span class="pill-k">${esc(label)}</span><b class="pill-v">${esc(value)}</b></span>`;
+  return `<div class="stat ${esc(tone)}${muted ? " muted" : ""}"><span class="stat-k">${esc(label)}</span><b class="stat-v">${esc(value)}</b></div>`;
 }
 
 const OUTCOME_STYLE = {
@@ -72,20 +95,20 @@ const OUTCOME_STYLE = {
 /** Outcome chip: label + icon + colour, never colour alone. */
 export function OutcomeChip(outcome, { small = false } = {}) {
   const st = OUTCOME_STYLE[outcome] ?? { tone: "unknown", icon: "circle-dashed" };
-  return `<span class="chip oc ${esc(st.tone)}${small ? " sm" : ""}">${icon(st.icon, { size: 13 })}<span>${esc(humanOutcome(outcome))}</span></span>`;
+  return `<span class="chip oc ${esc(st.tone)}${small ? " sm" : ""}" data-shape="${esc(st.icon)}">${esc(humanOutcome(outcome))}</span>`;
 }
 
 export function NotCountedChip(reason, { small = false } = {}) {
-  return `<span class="chip oc not_counted${small ? " sm" : ""}" title="${esc(humanReason(reason))}">${icon("circle-slash", { size: 13 })}<span>not counted</span></span>`;
+  return `<span class="chip oc not_counted${small ? " sm" : ""}" title="${esc(humanReason(reason))}">not counted</span>`;
 }
 
 /** Neutral blue "state" pill for workflow states (dispatch, find, sweep, CALL-E events). */
 export function StateChip(label, { small = false, icon: name = "" } = {}) {
-  return `<span class="chip oc state${small ? " sm" : ""}">${name ? icon(name, { size: 13 }) : ""}<span>${esc(label)}</span></span>`;
+  return `<span class="chip oc state${small ? " sm" : ""}">${esc(label)}</span>`;
 }
 
 export function HoldChip() {
-  return `<span class="chip oc hold sm">${icon("shield-check", { size: 13 })}<span>hold offered</span></span>`;
+  return `<span class="chip oc hold sm">hold offered</span>`;
 }
 
 const SIGNAL_ICON = { available: "check-circle", strained: "alert-triangle", shortage: "x-circle", insufficient_data: "circle-dashed" };
