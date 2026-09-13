@@ -46,7 +46,7 @@ export function Sidebar({ wordmark, tagline, nav, watchHtml, footHtml }) {
 }
 
 export function PageBar({ titleHtml, rightHtml }) {
-  return `<header class="topbar">
+  return `<header class="topbar fly" style="--d:.08s">
     <div class="page-title">${titleHtml}</div>
     <div class="topbar-right" id="topbar-controls">${rightHtml}</div>
   </header>`;
@@ -122,8 +122,9 @@ export function Tag(text, tone = "") {
   return `<span class="tag ${esc(tone)}">${esc(text)}</span>`;
 }
 
-export function PrimaryButton({ id = "", label, icon: name = "", type = "button", danger = false, disabled = false, attrs = "" }) {
-  return `<button class="btn btn-primary${danger ? " btn-danger" : ""}" type="${esc(type)}"${id ? ` id="${esc(id)}"` : ""}${disabled ? " disabled" : ""} ${attrs}><span class="btn-spinner" aria-hidden="true">${icon("loader", { size: 14 })}</span>${name ? icon(name, { size: 15 }) : ""}<span class="btn-label">${esc(label)}</span></button>`;
+export function PrimaryButton({ id = "", label, icon: name = "", iconAfter = false, type = "button", danger = false, disabled = false, attrs = "" }) {
+  const glyph = name ? icon(name, { size: 15, cls: iconAfter ? "arrow" : "" }) : "";
+  return `<button class="btn btn-primary${danger ? " btn-danger" : ""}" type="${esc(type)}"${id ? ` id="${esc(id)}"` : ""}${disabled ? " disabled" : ""} ${attrs}><span class="btn-spinner" aria-hidden="true">${icon("loader", { size: 14 })}</span>${iconAfter ? "" : glyph}<span class="btn-label">${esc(label)}</span>${iconAfter ? glyph : ""}</button>`;
 }
 
 export function SecondaryButton({ id = "", label, icon: name = "", type = "button", disabled = false, attrs = "", small = false }) {

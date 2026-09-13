@@ -167,8 +167,7 @@ function watchList() {
 }
 
 function sidebarFoot() {
-  return `<a class="side-link" href="#help-panel" data-nav="help-panel">${icon("help-circle", { size: 16 })}<span>How it works</span></a>
-    <p class="side-note">Built on <a href="https://www.heycall-e.com/" rel="noopener">CALL-E</a>. Every call says it is automated.</p>`;
+  return `<p class="side-note">Built on <a href="https://www.heycall-e.com/" rel="noopener">CALL-E</a>. Every call discloses that it is automated, and every number stays masked.</p>`;
 }
 
 function ignoreSwitch() {
@@ -179,7 +178,7 @@ function mainMarkup() {
   return `
     <div class="overview" id="overview">
       <div class="sample-banner" id="sample-banner" hidden></div>
-      <section class="index" id="availability-index-panel" aria-labelledby="availability-index-title">
+      <section class="index fly" style="--d:.18s" id="availability-index-panel" aria-labelledby="availability-index-title">
         <div class="index-head">
           <div>
             <h2 class="section-title" id="availability-index-title">Availability index</h2>
@@ -193,6 +192,7 @@ function mainMarkup() {
         <p class="table-note" id="strata-note" hidden></p>
       </section>
       ${C.SectionCard({
+        cls: "reveal",
         id: "find-now-panel",
         title: "Find it now",
         subtitle: "Source a fill in waves: known sources first, then the closest eligible pharmacies.",
@@ -210,29 +210,30 @@ function mainMarkup() {
           <div class="requests" id="find-request-list">${C.Skeleton(2)}</div>`
       })}
       ${C.SectionCard({
+        cls: "reveal",
         id: "sites-courtesy-panel",
         title: "Sites and courtesy",
         headActionsHtml: `<p class="sites-count" id="sites-count"></p>`,
         subtitle: "Numbers are masked everywhere. A site hears about a product at most once per cooldown; anyone who asks not to be called is out for good.",
         bodyHtml: `<div class="sites-wrap" id="sites-wrap">${C.Skeleton(4)}</div>`
       })}
-      ${C.SectionCard({ id: "help-panel", title: "How Shortline works", cls: "help", bodyHtml: `<div class="help-grid" id="help-body"></div>` })}
+      ${C.SectionCard({ id: "help-panel", title: "How Shortline works", cls: "help reveal", bodyHtml: `<div class="help-grid" id="help-body"></div>` })}
     </div>`;
 }
 
 function railMarkup() {
   return `
-    <section class="card rail-card" id="weekly-sweep-panel" aria-labelledby="weekly-sweep-title">
+    <section class="card rail-card fly" style="--d:.3s" id="weekly-sweep-panel" aria-labelledby="weekly-sweep-title">
       <div class="card-head">
         <div class="card-title-wrap"><h2 class="card-title" id="weekly-sweep-title">This week\u2019s sweep</h2></div>
-        <div class="card-actions">${C.PrimaryButton({ id: "run-sweep-now", label: "Run sweep", icon: "play" })}</div>
+        <div class="card-actions">${C.PrimaryButton({ id: "run-sweep-now", label: "Run sweep", icon: "arrow-right", iconAfter: true })}</div>
       </div>
       <div class="card-body">
         <div class="stats" id="sweep-pills">${C.Skeleton(1)}</div>
         <p class="hint" id="calling-window-hint" hidden></p>
       </div>
     </section>
-    <section class="card rail-card feed-card" aria-labelledby="activity-title">
+    <section class="card rail-card feed-card fly" style="--d:.42s" aria-labelledby="activity-title">
       <div class="card-head">
         <div class="card-title-wrap"><h2 class="card-title" id="activity-title">Activity</h2></div>
         <span class="feed-zone" id="feed-zone"></span>
@@ -246,6 +247,29 @@ function railMarkup() {
 
 function footer() {
   return `<footer class="foot"><span>Observations from dry-run mode are marked simulated. Numbers are masked everywhere.</span></footer>`;
+}
+
+/** Sections below the fold fly in the first time they are scrolled to, once each. */
+function wireReveal() {
+  const targets = [...document.querySelectorAll(".reveal:not(.shown)")];
+  if (targets.length === 0) return;
+  if (!("IntersectionObserver" in window)) return;
+  // Only hide anything once the observer is certain to reveal it again.
+  document.body.classList.add("js-reveal");
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.style.setProperty("--d", "0s");
+        entry.target.classList.add("shown");
+        io.unobserve(entry.target);
+      }
+    },
+    { rootMargin: "0px 0px -12% 0px", threshold: 0.08 }
+  );
+  targets.forEach((el) => io.observe(el));
+  // Belt and braces: nothing stays hidden for more than a few seconds.
+  setTimeout(() => targets.forEach((el) => el.classList.add("shown")), 4000);
 }
 
 function mountShell() {
@@ -267,6 +291,7 @@ function mountShell() {
       railHtml: railMarkup(),
       footerHtml: footer()
     }) + C.TranscriptDialog();
+  wireReveal();
 }
 
 /* ------------------------------------------------------------ Loading */
